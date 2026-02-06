@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(npm run dev:*)",
+      "Bash(copy \"C:\\\\Users\\\\HP\\\\Desktop\\\\accescomp-claude\\\\referencias\\\\logo-cailico.png\" \"C:\\\\Users\\\\HP\\\\Desktop\\\\accescomp-claude\\\\public\\\\logo-cailico.png\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@168.231.75.16 \"echo ''Conexión exitosa!'' && hostname && whoami\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)"
+    ]
+  }
+}
