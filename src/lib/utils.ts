@@ -20,7 +20,7 @@ export function parseCurrency(value: string): number {
   if (!value) return 0;
 
   // Quitar símbolo de peso y espacios
-  let cleaned = value.replace(/[$\s]/g, '').trim();
+  const cleaned = value.replace(/[$\s]/g, '').trim();
   if (!cleaned) return 0;
 
   // Verificar que solo contenga números, puntos y comas
