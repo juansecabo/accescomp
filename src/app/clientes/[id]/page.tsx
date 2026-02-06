@@ -37,7 +37,7 @@ export default function ClienteDetailPage() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [ordenes, setOrdenes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedEstados, setSelectedEstados] = useState<Set<EstadoOrden | 'todas'>>(new Set(['todas']));
+  const [selectedEstados, setSelectedEstados] = useState<Set<EstadoOrden | 'todas'>>(() => new Set<EstadoOrden | 'todas'>(['todas']));
   const [sortAscending, setSortAscending] = useState(false);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
