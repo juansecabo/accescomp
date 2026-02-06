@@ -171,10 +171,10 @@ export default function ClienteDetailPage() {
   };
 
   const handleEstadoFilterClick = (estado: EstadoOrden | 'todas') => {
-    const newSelected = new Set(selectedEstados);
+    const newSelected = new Set<EstadoOrden | 'todas'>(selectedEstados);
 
     if (estado === 'todas') {
-      setSelectedEstados(new Set(['todas']));
+      setSelectedEstados(new Set<EstadoOrden | 'todas'>(['todas']));
       return;
     }
 
@@ -191,7 +191,7 @@ export default function ClienteDetailPage() {
 
     const allEstados: EstadoOrden[] = ['recibido', 'en_proceso', 'listo', 'entregado'];
     if (allEstados.every(e => newSelected.has(e))) {
-      setSelectedEstados(new Set(['todas']));
+      setSelectedEstados(new Set<EstadoOrden | 'todas'>(['todas']));
     } else {
       setSelectedEstados(newSelected);
     }
