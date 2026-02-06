@@ -37,18 +37,18 @@ export default function OrdenesPage() {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [selectedEstados, setSelectedEstados] = useState<Set<EstadoOrden | 'todas'>>(() => {
     if (estadoParam && ['recibido', 'en_proceso', 'listo', 'entregado'].includes(estadoParam)) {
-      return new Set([estadoParam]);
+      return new Set<EstadoOrden | 'todas'>([estadoParam]);
     }
-    return new Set(['todas']);
+    return new Set<EstadoOrden | 'todas'>(['todas']);
   });
   const [selectedPagos, setSelectedPagos] = useState<Set<'completo' | 'incompleto'>>(() => {
     if (pagoParam === 'completo') {
-      return new Set(['completo']);
+      return new Set<'completo' | 'incompleto'>(['completo']);
     }
     if (pagoParam === 'incompleto') {
-      return new Set(['incompleto']);
+      return new Set<'completo' | 'incompleto'>(['incompleto']);
     }
-    return new Set(['completo', 'incompleto']);
+    return new Set<'completo' | 'incompleto'>(['completo', 'incompleto']);
   });
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [estadoMenuOpenId, setEstadoMenuOpenId] = useState<string | null>(null);
@@ -210,10 +210,10 @@ export default function OrdenesPage() {
   };
 
   const handleEstadoFilterClick = (estado: EstadoOrden | 'todas') => {
-    const newSelected = new Set(selectedEstados);
+    const newSelected = new Set<EstadoOrden | 'todas'>(selectedEstados);
 
     if (estado === 'todas') {
-      setSelectedEstados(new Set(['todas']));
+      setSelectedEstados(new Set<EstadoOrden | 'todas'>(['todas']));
       return;
     }
 
@@ -230,14 +230,14 @@ export default function OrdenesPage() {
 
     const allEstados: EstadoOrden[] = ['recibido', 'en_proceso', 'listo', 'entregado'];
     if (allEstados.every(e => newSelected.has(e))) {
-      setSelectedEstados(new Set(['todas']));
+      setSelectedEstados(new Set<EstadoOrden | 'todas'>(['todas']));
     } else {
       setSelectedEstados(newSelected);
     }
   };
 
   const handlePagoFilterClick = (pago: 'completo' | 'incompleto') => {
-    const newSelected = new Set(selectedPagos);
+    const newSelected = new Set<'completo' | 'incompleto'>(selectedPagos);
 
     if (newSelected.has(pago)) {
       // Solo quitar si hay más de uno seleccionado
