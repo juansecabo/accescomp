@@ -310,10 +310,10 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
       {!stream && !videoUrl && (
         <div className="space-y-4">
           <div className="flex gap-2 flex-wrap">
-            <Button onClick={() => iniciarCamara(true)} variant="secondary">
+            <Button type="button" onClick={() => iniciarCamara(true)} variant="secondary">
               Tomar Foto
             </Button>
-            <Button onClick={() => iniciarCamara(false)} variant="secondary">
+            <Button type="button" onClick={() => iniciarCamara(false)} variant="secondary">
               Grabar Video
             </Button>
             <label className="inline-flex cursor-pointer">
@@ -351,26 +351,26 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
           <div className="flex gap-2">
             {modoFoto ? (
               <>
-                <Button onClick={tomarFoto} variant="primary" disabled={!camaraLista}>
+                <Button type="button" onClick={tomarFoto} variant="primary" disabled={!camaraLista}>
                   {camaraLista ? 'Capturar Foto' : 'Cargando...'}
                 </Button>
-                <Button onClick={cancelarCamara} variant="secondary">
+                <Button type="button" onClick={cancelarCamara} variant="secondary">
                   Cancelar
                 </Button>
               </>
             ) : (
               <>
                 {!grabando ? (
-                  <Button onClick={iniciarGrabacion} variant="primary" disabled={!camaraLista}>
+                  <Button type="button" onClick={iniciarGrabacion} variant="primary" disabled={!camaraLista}>
                     {camaraLista ? 'Iniciar Grabación' : 'Cargando...'}
                   </Button>
                 ) : (
-                  <Button onClick={detenerGrabacion} variant="danger">
+                  <Button type="button" onClick={detenerGrabacion} variant="danger">
                     Detener Grabación
                   </Button>
                 )}
                 {!grabando && (
-                  <Button onClick={cancelarCamara} variant="secondary">
+                  <Button type="button" onClick={cancelarCamara} variant="secondary">
                     Cancelar
                   </Button>
                 )}
@@ -389,15 +389,15 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
           />
           <div className="flex gap-2">
             {ordenId ? (
-              <Button onClick={subirVideo} loading={subiendo}>
+              <Button type="button" onClick={subirVideo} loading={subiendo}>
                 Guardar Video
               </Button>
             ) : (
-              <Button onClick={guardarVideoLocal}>
+              <Button type="button" onClick={guardarVideoLocal}>
                 Agregar Video
               </Button>
             )}
-            <Button onClick={reiniciar} variant="secondary">
+            <Button type="button" onClick={reiniciar} variant="secondary">
               Volver a grabar
             </Button>
           </div>
