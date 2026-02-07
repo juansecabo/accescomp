@@ -28,6 +28,7 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
   const [error, setError] = useState<string | null>(null);
   const [archivosLocales, setArchivosLocales] = useState<ArchivoTemporal[]>(archivosTemporales);
   const [modoFoto, setModoFoto] = useState(false);
+  const [camaraLista, setCamaraLista] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,24 +44,34 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
     };
   }, [stream]);
 
+  // Asignar stream al video cuando cambie y el elemento exista
+  useEffect(() => {
+    if (stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.onloadedmetadata = () => {
+        setCamaraLista(true);
+      };
+    } else {
+      setCamaraLista(false);
+    }
+  }, [stream]);
+
   useEffect(() => {
     if (onArchivosTemporales) {
       onArchivosTemporales(archivosLocales);
     }
-  }, [archivosLocales]);
+  }, [archivosLocales, onArchivosTemporales]);
 
   const iniciarCamara = async (paraFoto: boolean = false) => {
     try {
       setError(null);
       setModoFoto(paraFoto);
+      setCamaraLista(false);
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
-        audio: !paraFoto, // Solo audio si es para video
+        audio: !paraFoto,
       });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
     } catch (err) {
       setError('No se pudo acceder a la cámara. Verifica los permisos.');
       console.error('Error al acceder a la cámara:', err);
@@ -68,10 +79,20 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
   };
 
   const tomarFoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current || !camaraLista) {
+      setError('La cámara aún no está lista. Espera un momento.');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
+
+    // Verificar que el video tenga dimensiones válidas
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      setError('Error al capturar: el video no tiene dimensiones válidas.');
+      return;
+    }
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
@@ -88,7 +109,7 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
             previewUrl,
             nombre: `foto_${Date.now()}.jpg`,
           };
-          setArchivosLocales([...archivosLocales, nuevoArchivo]);
+          setArchivosLocales(prev => [...prev, nuevoArchivo]);
         }
       }, 'image/jpeg', 0.9);
     }
@@ -107,6 +128,7 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
       setStream(null);
     }
     setModoFoto(false);
+    setCamaraLista(false);
   };
 
   const iniciarGrabacion = () => {
@@ -157,7 +179,7 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
       nombre: `video_${Date.now()}.webm`,
     };
 
-    setArchivosLocales([...archivosLocales, nuevoArchivo]);
+    setArchivosLocales(prev => [...prev, nuevoArchivo]);
     setVideoUrl(null);
     setVideoBlob(null);
   };
@@ -201,7 +223,6 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
 
     const tipo = file.type.startsWith('video') ? 'video' : 'imagen';
 
-    // Si no hay ordenId, guardar localmente
     if (!ordenId) {
       const previewUrl = URL.createObjectURL(file);
       const nuevoArchivo: ArchivoTemporal = {
@@ -211,12 +232,11 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
         previewUrl,
         nombre: file.name,
       };
-      setArchivosLocales([...archivosLocales, nuevoArchivo]);
+      setArchivosLocales(prev => [...prev, nuevoArchivo]);
       event.target.value = '';
       return;
     }
 
-    // Si hay ordenId, subir directamente
     setSubiendo(true);
     try {
       const nombreArchivo = `${ordenId}/${Date.now()}_${file.name}`;
@@ -245,7 +265,7 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
   };
 
   const eliminarArchivoLocal = (id: string) => {
-    setArchivosLocales(archivosLocales.filter(a => a.id !== id));
+    setArchivosLocales(prev => prev.filter(a => a.id !== id));
   };
 
   const reiniciar = () => {
@@ -262,7 +282,6 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
         </div>
       )}
 
-      {/* Archivos ya agregados (locales o subidos) */}
       {archivosLocales.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {archivosLocales.map((archivo) => (
@@ -286,7 +305,6 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
         </div>
       )}
 
-      {/* Canvas oculto para capturar fotos */}
       <canvas ref={canvasRef} className="hidden" />
 
       {!stream && !videoUrl && (
@@ -316,18 +334,25 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
 
       {stream && !videoUrl && (
         <div className="space-y-4">
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full max-w-md rounded-lg border border-gray-300"
-          />
+          <div className="relative">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className="w-full max-w-md rounded-lg border border-gray-300"
+            />
+            {!camaraLista && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+                <span className="text-white">Cargando cámara...</span>
+              </div>
+            )}
+          </div>
           <div className="flex gap-2">
             {modoFoto ? (
               <>
-                <Button onClick={tomarFoto} variant="primary">
-                  Capturar Foto
+                <Button onClick={tomarFoto} variant="primary" disabled={!camaraLista}>
+                  {camaraLista ? 'Capturar Foto' : 'Cargando...'}
                 </Button>
                 <Button onClick={cancelarCamara} variant="secondary">
                   Cancelar
@@ -336,8 +361,8 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
             ) : (
               <>
                 {!grabando ? (
-                  <Button onClick={iniciarGrabacion} variant="primary">
-                    Iniciar Grabación
+                  <Button onClick={iniciarGrabacion} variant="primary" disabled={!camaraLista}>
+                    {camaraLista ? 'Iniciar Grabación' : 'Cargando...'}
                   </Button>
                 ) : (
                   <Button onClick={detenerGrabacion} variant="danger">
@@ -382,11 +407,10 @@ export function GrabadorVideo({ ordenId, onArchivoSubido, onArchivosTemporales, 
   );
 }
 
-// Función auxiliar para subir archivos temporales después de crear la orden
 export async function subirArchivosTemporales(
   ordenId: string,
   archivos: ArchivoTemporal[],
-  supabase: any
+  supabase: ReturnType<typeof createClient>
 ): Promise<{ tipo: string; url: string; nombre: string }[]> {
   const resultados: { tipo: string; url: string; nombre: string }[] = [];
 
