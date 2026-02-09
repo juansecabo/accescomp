@@ -52,7 +52,7 @@ export default function LoginPage() {
       {/* Fondo para móvil - imagen de fondo */}
       <div className="lg:hidden fixed inset-0 z-0">
         <Image
-          src="/fondo-elementos.png"
+          src="/fondo-elementos.webp"
           alt="Fondo"
           fill
           className="object-cover"
@@ -66,7 +66,7 @@ export default function LoginPage() {
         {/* Imagen de fondo clara */}
         <div className="absolute inset-0">
           <Image
-            src="/fondo-elementos.png"
+            src="/fondo-elementos.webp"
             alt="Fondo"
             fill
             className="object-cover"
@@ -89,7 +89,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-center gap-2 mb-8">
               <div className="relative w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 transition-transform duration-300 hover:scale-105">
                 <Image
-                  src="/logo-accescomp.png"
+                  src="/logo-accescomp.webp"
                   alt="Accescomp"
                   fill
                   className="object-contain drop-shadow-lg"
@@ -206,7 +206,7 @@ export default function LoginPage() {
             <div className="flex flex-col items-center">
               <div className="relative w-24 h-24">
                 <Image
-                  src="/logo-cailico.png"
+                  src="/logo-cailico.webp"
                   alt="Cailico"
                   fill
                   className="object-contain"

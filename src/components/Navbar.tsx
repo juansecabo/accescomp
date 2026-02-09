@@ -118,7 +118,7 @@ export function Navbar() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <Image
-                  src="/logo-accescomp.png"
+                  src="/logo-accescomp.webp"
                   alt="Accescomp"
                   width={120}
                   height={40}
