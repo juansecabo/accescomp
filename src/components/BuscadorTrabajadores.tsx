@@ -153,12 +153,14 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
         </p>
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={() => { setConfirmDeleteId(null); setConfirmDeleteNombre(''); }}
             className="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium text-sm"
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleConfirmDelete}
             disabled={deletingId === confirmDeleteId}
             className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm disabled:opacity-50"
@@ -211,6 +213,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             autoFocus
                           />
                           <button
+                            type="button"
                             onClick={() => handleEditSave(t.id)}
                             disabled={savingEdit}
                             className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
@@ -218,6 +221,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             {savingEdit ? '...' : 'Guardar'}
                           </button>
                           <button
+                            type="button"
                             onClick={() => setEditandoId(null)}
                             className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                           >
@@ -228,6 +232,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                         <>
                           <span className="flex-1 text-sm">{t.nombre}</span>
                           <button
+                            type="button"
                             onClick={() => {
                               setEditandoId(t.id);
                               setEditNombre(t.nombre);
@@ -240,6 +245,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             </svg>
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               setConfirmDeleteId(t.id);
                               setConfirmDeleteNombre(t.nombre);
@@ -324,6 +330,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             autoFocus
                           />
                           <button
+                            type="button"
                             onClick={() => handleEditSave(t.id)}
                             disabled={savingEdit}
                             className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
@@ -331,6 +338,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             {savingEdit ? '...' : 'Guardar'}
                           </button>
                           <button
+                            type="button"
                             onClick={() => setEditandoId(null)}
                             className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                           >
@@ -341,6 +349,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                         <>
                           <span className="flex-1 text-sm">{t.nombre}</span>
                           <button
+                            type="button"
                             onClick={() => {
                               setEditandoId(t.id);
                               setEditNombre(t.nombre);
@@ -353,6 +362,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             </svg>
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               setConfirmDeleteId(t.id);
                               setConfirmDeleteNombre(t.nombre);
