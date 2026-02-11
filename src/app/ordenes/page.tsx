@@ -139,6 +139,7 @@ export default function OrdenesPage() {
       .select(`
         *,
         cliente:clientes(id, nombre, telefono, tipo_documento, numero_documento),
+        recibido_por:trabajadores(nombre),
         items:items_orden(precio, cantidad),
         pagos(monto)
       `)
@@ -677,6 +678,11 @@ export default function OrdenesPage() {
                         <p className="text-gray-900 mt-1">
                           {orden.cliente?.nombre || 'Sin cliente'}
                         </p>
+                        {orden.recibido_por && (
+                          <p className="text-sm text-gray-500">
+                            Recibido por: {orden.recibido_por.nombre}
+                          </p>
+                        )}
                         {orden.cliente?.numero_documento && (
                           <p className="text-sm text-gray-500">
                             {orden.cliente.tipo_documento}: {orden.cliente.numero_documento}

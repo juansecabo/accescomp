@@ -110,7 +110,8 @@ export default function OrdenDetailPage() {
       .select(`
         *,
         cliente:clientes(*),
-        tecnico:tecnicos(*)
+        tecnico:tecnicos(*),
+        recibido_por:trabajadores(*)
       `)
       .eq('id', ordenId)
       .single();
@@ -689,6 +690,18 @@ export default function OrdenDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Recibido por */}
+          {orden.recibido_por && (
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold">Recibido por</h2>
+              </CardHeader>
+              <CardContent>
+                <p className="font-medium">{orden.recibido_por.nombre}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Equipo */}
           <Card>

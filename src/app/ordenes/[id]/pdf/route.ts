@@ -30,7 +30,8 @@ export async function GET(
     .select(`
       *,
       cliente:clientes(*),
-      tecnico:tecnicos(*)
+      tecnico:tecnicos(*),
+      recibido_por:trabajadores(*)
     `)
     .eq('id', ordenId)
     .single();
@@ -96,7 +97,12 @@ export async function GET(
     minute: '2-digit',
   });
   doc.text(`Fecha: ${fecha}`, pageWidth / 2, y, { align: 'center' });
-  y += 15;
+  y += 6;
+
+  if (orden.recibido_por) {
+    doc.text(`Recibido por: ${orden.recibido_por.nombre}`, pageWidth / 2, y, { align: 'center' });
+  }
+  y += 10;
 
   // Línea separadora
   doc.setDrawColor(200);

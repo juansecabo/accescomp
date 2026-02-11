@@ -10,10 +10,11 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { BuscadorClientes } from '@/components/BuscadorClientes';
+import { BuscadorTrabajadores } from '@/components/BuscadorTrabajadores';
 import { ItemsFacturacion } from '@/components/ItemsFacturacion';
 import { FirmaDigital } from '@/components/FirmaDigital';
 import { GrabadorVideo, subirArchivosTemporales } from '@/components/GrabadorVideo';
-import type { Cliente, ItemOrden, Tecnico } from '@/types';
+import type { Cliente, ItemOrden, Tecnico, Trabajador } from '@/types';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { parseCurrency, formatCurrency } from '@/lib/utils';
 
@@ -42,6 +43,7 @@ export default function NuevaOrdenPage() {
   const clienteIdParam = searchParams.get('cliente_id');
 
   const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [recibidoPor, setRecibidoPor] = useState<Trabajador | null>(null);
   const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
   const [items, setItems] = useState<ItemOrden[]>([]);
   const [facturacionModificada, setFacturacionModificada] = useState(false);
@@ -212,6 +214,7 @@ export default function NuevaOrdenPage() {
           numero_orden: numeroOrden,
           cliente_id: cliente.id,
           tecnico_id: formData.tecnico_id || null,
+          recibido_por_id: recibidoPor?.id || null,
           equipo_descripcion: formData.equipo_descripcion,
           observaciones: formData.observaciones,
           motivo_visita: formData.motivo_visita,
@@ -318,10 +321,23 @@ export default function NuevaOrdenPage() {
             </CardContent>
           </Card>
 
-          {/* Sección 2: Equipo */}
+          {/* Sección 2: Recibido por */}
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold">2. Equipo</h2>
+              <h2 className="text-lg font-semibold">2. Recibido por</h2>
+            </CardHeader>
+            <CardContent>
+              <BuscadorTrabajadores
+                onTrabajadorSelect={setRecibidoPor}
+                trabajadorSeleccionado={recibidoPor}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Sección 3: Equipo */}
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold">3. Equipo</h2>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
@@ -357,10 +373,10 @@ export default function NuevaOrdenPage() {
             </CardContent>
           </Card>
 
-          {/* Sección 3: Servicio */}
+          {/* Sección 4: Servicio */}
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold">3. Servicio</h2>
+              <h2 className="text-lg font-semibold">4. Servicio</h2>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
@@ -386,10 +402,10 @@ export default function NuevaOrdenPage() {
             </CardContent>
           </Card>
 
-          {/* Sección 4: Facturación */}
+          {/* Sección 5: Facturación */}
           <Card>
             <CardHeader>
-              <h2 className="text-lg font-semibold">4. Facturación</h2>
+              <h2 className="text-lg font-semibold">5. Facturación</h2>
             </CardHeader>
             <CardContent className="space-y-4">
               <ItemsFacturacion
@@ -438,11 +454,11 @@ export default function NuevaOrdenPage() {
             </CardContent>
           </Card>
 
-          {/* Sección 5: Contrato */}
+          {/* Sección 6: Contrato */}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">5. Condiciones del Servicio</h2>
+                <h2 className="text-lg font-semibold">6. Condiciones del Servicio</h2>
                 <div className="relative" ref={condicionesMenuRef}>
                   <button
                     type="button"

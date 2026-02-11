@@ -5,6 +5,12 @@ export interface Tecnico {
   created_at: string;
 }
 
+export interface Trabajador {
+  id: string;
+  nombre: string;
+  created_at: string;
+}
+
 export interface Cliente {
   id: string;
   nombre: string;
@@ -26,6 +32,7 @@ export interface Orden {
   motivo_visita: string;
   trabajo_realizar: string;
   estado: 'recibido' | 'en_proceso' | 'listo' | 'entregado';
+  recibido_por_id?: string;
   firma_cliente?: string;
   condiciones_aceptadas: boolean;
   created_at: string;
@@ -33,6 +40,7 @@ export interface Orden {
   // Relaciones
   cliente?: Cliente;
   tecnico?: Tecnico;
+  recibido_por?: Trabajador;
   items?: ItemOrden[];
   pagos?: Pago[];
   archivos?: ArchivoOrden[];
