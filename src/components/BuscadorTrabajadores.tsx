@@ -25,6 +25,8 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
   const [editNombre, setEditNombre] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmDeleteNombre, setConfirmDeleteNombre] = useState('');
   const supabase = createClient();
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
     const { data } = await supabase
       .from('trabajadores')
       .select('*')
+      .eq('activo', true)
       .order('nombre');
 
     if (data) {
@@ -86,6 +89,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
     const { data } = await supabase
       .from('trabajadores')
       .select('*')
+      .eq('activo', true)
       .order('nombre');
     setTrabajadores(data || []);
   };
@@ -116,21 +120,55 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
     setSavingEdit(false);
   };
 
-  const handleDelete = async (id: string) => {
-    setDeletingId(id);
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    setDeletingId(confirmDeleteId);
     const { error } = await supabase
       .from('trabajadores')
-      .delete()
-      .eq('id', id);
+      .update({ activo: false })
+      .eq('id', confirmDeleteId);
 
     if (!error) {
-      setTrabajadores(trabajadores.filter(t => t.id !== id));
-      if (trabajadorSeleccionado?.id === id) {
+      setTrabajadores(trabajadores.filter(t => t.id !== confirmDeleteId));
+      if (trabajadorSeleccionado?.id === confirmDeleteId) {
         onTrabajadorSelect(null);
       }
     }
     setDeletingId(null);
+    setConfirmDeleteId(null);
+    setConfirmDeleteNombre('');
   };
+
+  // Modal de confirmación de eliminación
+  const confirmDeleteModal = confirmDeleteId && (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={() => { setConfirmDeleteId(null); setConfirmDeleteNombre(''); }} />
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-3">Eliminar Trabajador</h2>
+        <p className="text-gray-600 mb-2">
+          ¿Estás seguro de que deseas eliminar a <strong>{confirmDeleteNombre}</strong>?
+        </p>
+        <p className="text-sm text-gray-500 mb-6">
+          Las órdenes existentes de este trabajador no se verán afectadas.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => { setConfirmDeleteId(null); setConfirmDeleteNombre(''); }}
+            className="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleConfirmDelete}
+            disabled={deletingId === confirmDeleteId}
+            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm disabled:opacity-50"
+          >
+            {deletingId === confirmDeleteId ? 'Eliminando...' : 'Eliminar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (trabajadorSeleccionado) {
     return (
@@ -202,7 +240,10 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleDelete(t.id)}
+                            onClick={() => {
+                              setConfirmDeleteId(t.id);
+                              setConfirmDeleteNombre(t.nombre);
+                            }}
                             disabled={deletingId === t.id}
                             className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                             title="Eliminar"
@@ -225,6 +266,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
             </div>
           </div>
         )}
+        {confirmDeleteModal}
       </div>
     );
   }
@@ -311,7 +353,10 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleDelete(t.id)}
+                            onClick={() => {
+                              setConfirmDeleteId(t.id);
+                              setConfirmDeleteNombre(t.nombre);
+                            }}
                             disabled={deletingId === t.id}
                             className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                             title="Eliminar"
@@ -334,6 +379,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
             </div>
           </div>
         )}
+        {confirmDeleteModal}
       </div>
     );
   }
@@ -444,7 +490,10 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
                           </svg>
                         </button>
                         <button
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => {
+                              setConfirmDeleteId(t.id);
+                              setConfirmDeleteNombre(t.nombre);
+                            }}
                           disabled={deletingId === t.id}
                           className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Eliminar"
@@ -467,6 +516,7 @@ export function BuscadorTrabajadores({ onTrabajadorSelect, trabajadorSeleccionad
           </div>
         </div>
       )}
+      {confirmDeleteModal}
     </div>
   );
 }
