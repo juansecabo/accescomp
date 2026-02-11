@@ -89,12 +89,13 @@ export async function GET(
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  const fecha = new Date(orden.created_at).toLocaleDateString('es-MX', {
+  const fecha = new Date(orden.created_at).toLocaleDateString('es-CO', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'America/Bogota',
   });
   doc.text(`Fecha: ${fecha}`, pageWidth / 2, y, { align: 'center' });
   y += 6;
