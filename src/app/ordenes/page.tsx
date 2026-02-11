@@ -41,14 +41,10 @@ export default function OrdenesPage() {
     }
     return new Set<EstadoOrden | 'todas'>(['todas']);
   });
-  const [selectedPagos, setSelectedPagos] = useState<Set<'completo' | 'incompleto'>>(() => {
-    if (pagoParam === 'completo') {
-      return new Set<'completo' | 'incompleto'>(['completo']);
-    }
-    if (pagoParam === 'incompleto') {
-      return new Set<'completo' | 'incompleto'>(['incompleto']);
-    }
-    return new Set<'completo' | 'incompleto'>(['completo', 'incompleto']);
+  const [filtroPago, setFiltroPago] = useState<'todos' | 'completo' | 'incompleto'>(() => {
+    if (pagoParam === 'completo') return 'completo';
+    if (pagoParam === 'incompleto') return 'incompleto';
+    return 'todos';
   });
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [estadoMenuOpenId, setEstadoMenuOpenId] = useState<string | null>(null);
@@ -243,21 +239,6 @@ export default function OrdenesPage() {
     }
   };
 
-  const handlePagoFilterClick = (pago: 'completo' | 'incompleto') => {
-    const newSelected = new Set<'completo' | 'incompleto'>(selectedPagos);
-
-    if (newSelected.has(pago)) {
-      // Solo quitar si hay más de uno seleccionado
-      if (newSelected.size > 1) {
-        newSelected.delete(pago);
-      }
-    } else {
-      newSelected.add(pago);
-    }
-
-    setSelectedPagos(newSelected);
-  };
-
   const handleChangeEstado = async (ordenId: string, nuevoEstado: EstadoOrden) => {
     const { error } = await supabase
       .from('ordenes')
@@ -311,12 +292,10 @@ export default function OrdenesPage() {
     }
 
     // Filtro por pago
-    const esCompleto = esPagoCompleto(orden);
-    if (esCompleto && !selectedPagos.has('completo')) {
-      return false;
-    }
-    if (!esCompleto && !selectedPagos.has('incompleto')) {
-      return false;
+    if (filtroPago !== 'todos') {
+      const esCompleto = esPagoCompleto(orden);
+      if (filtroPago === 'completo' && !esCompleto) return false;
+      if (filtroPago === 'incompleto' && esCompleto) return false;
     }
 
     // Filtro por trabajador
@@ -560,11 +539,21 @@ export default function OrdenesPage() {
             {/* Filtros de pago - a la derecha */}
             <div>
               <p className="text-sm font-medium text-gray-700 mb-2">Filtrar por pago:</p>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2">
                 <button
-                  onClick={() => handlePagoFilterClick('incompleto')}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm ${
-                    selectedPagos.has('incompleto')
+                  onClick={() => setFiltroPago('todos')}
+                  className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm ${
+                    filtroPago === 'todos'
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  Todos
+                </button>
+                <button
+                  onClick={() => setFiltroPago('incompleto')}
+                  className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm ${
+                    filtroPago === 'incompleto'
                       ? 'bg-red-500 text-white'
                       : 'bg-white text-gray-700 border border-red-300 hover:bg-red-50'
                   }`}
@@ -572,9 +561,9 @@ export default function OrdenesPage() {
                   Pago incompleto
                 </button>
                 <button
-                  onClick={() => handlePagoFilterClick('completo')}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm ${
-                    selectedPagos.has('completo')
+                  onClick={() => setFiltroPago('completo')}
+                  className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm ${
+                    filtroPago === 'completo'
                       ? 'bg-green-500 text-white'
                       : 'bg-white text-gray-700 border border-green-300 hover:bg-green-50'
                   }`}
