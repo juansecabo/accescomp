@@ -22,7 +22,7 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Referencias y docs
-referencias/
+# Referencias y docs (solo excluir archivos innecesarios)
+referencias/*.md
 *.md
 *.sql

@@ -11,8 +11,9 @@ import { ItemsFacturacion } from '@/components/ItemsFacturacion';
 import { EstadoOrden } from '@/components/EstadoOrden';
 import { GrabadorVideo } from '@/components/GrabadorVideo';
 import { FirmaDigital } from '@/components/FirmaDigital';
+import { BuscadorTrabajadores } from '@/components/BuscadorTrabajadores';
 import { formatDateTime, formatCurrency, parseCurrency } from '@/lib/utils';
-import { ESTADOS_ORDEN, type ItemOrden, type Pago, type ArchivoOrden, type EstadoOrden as TipoEstado } from '@/types';
+import { ESTADOS_ORDEN, type ItemOrden, type Pago, type ArchivoOrden, type EstadoOrden as TipoEstado, type Trabajador } from '@/types';
 import Link from 'next/link';
 import { Breadcrumb } from '@/components/Breadcrumb';
 
@@ -42,6 +43,7 @@ export default function OrdenDetailPage() {
     firma_cliente: null as string | null,
   });
   const [editItems, setEditItems] = useState<ItemOrden[]>([]);
+  const [editRecibidoPor, setEditRecibidoPor] = useState<Trabajador | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Estados para el menú de condiciones en edición
@@ -126,6 +128,7 @@ export default function OrdenDetailPage() {
         condiciones_aceptadas: ordenData.condiciones_aceptadas || false,
         firma_cliente: ordenData.firma_cliente || null,
       });
+      setEditRecibidoPor(ordenData.recibido_por || null);
 
       // Cargar items
       const { data: itemsData } = await supabase
@@ -200,6 +203,7 @@ export default function OrdenDetailPage() {
         equipo_descripcion: editData.equipo_descripcion,
         observaciones: editData.observaciones,
         trabajo_realizar: editData.trabajo_realizar,
+        recibido_por_id: editRecibidoPor?.id || null,
         condiciones_servicio: editData.condiciones_servicio,
         condiciones_aceptadas: editData.condiciones_aceptadas,
         firma_cliente: editData.firma_cliente,
@@ -231,6 +235,8 @@ export default function OrdenDetailPage() {
         equipo_descripcion: editData.equipo_descripcion,
         observaciones: editData.observaciones,
         trabajo_realizar: editData.trabajo_realizar,
+        recibido_por: editRecibidoPor,
+        recibido_por_id: editRecibidoPor?.id || null,
         condiciones_servicio: editData.condiciones_servicio,
         condiciones_aceptadas: editData.condiciones_aceptadas,
         firma_cliente: editData.firma_cliente,
@@ -406,6 +412,7 @@ export default function OrdenDetailPage() {
                 firma_cliente: orden.firma_cliente || null,
               });
               setEditItems([...items]);
+              setEditRecibidoPor(orden.recibido_por || null);
               setEditTab('equipo');
               setShowEditModal(true);
             }}>
@@ -461,6 +468,13 @@ export default function OrdenDetailPage() {
               {/* Tab: Equipo y Servicio */}
               {editTab === 'equipo' && (
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Recibido por</label>
+                    <BuscadorTrabajadores
+                      onTrabajadorSelect={setEditRecibidoPor}
+                      trabajadorSeleccionado={editRecibidoPor}
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Descripción del equipo</label>
                     <textarea
