@@ -61,10 +61,13 @@ export default function OrdenesPage() {
   const [editandoProximoNumero, setEditandoProximoNumero] = useState(false);
   const [nuevoProximoNumero, setNuevoProximoNumero] = useState('');
   const [savingProximoNumero, setSavingProximoNumero] = useState(false);
+  const [selectedTrabajador, setSelectedTrabajador] = useState<string>('todos');
+  const [showTrabajadorDropdown, setShowTrabajadorDropdown] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const estadoMenuRef = useRef<HTMLDivElement>(null);
   const pagoMenuRef = useRef<HTMLDivElement>(null);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
+  const trabajadorDropdownRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -127,6 +130,9 @@ export default function OrdenesPage() {
       if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target as Node)) {
         setShowSearchDropdown(false);
       }
+      if (trabajadorDropdownRef.current && !trabajadorDropdownRef.current.contains(event.target as Node)) {
+        setShowTrabajadorDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -139,7 +145,7 @@ export default function OrdenesPage() {
       .select(`
         *,
         cliente:clientes(id, nombre, telefono, tipo_documento, numero_documento),
-        recibido_por:trabajadores(nombre),
+        recibido_por:trabajadores(id, nombre),
         items:items_orden(precio, cantidad),
         pagos(monto)
       `)
@@ -284,6 +290,17 @@ export default function OrdenesPage() {
     }
   };
 
+  // Extraer trabajadores únicos de las órdenes
+  const trabajadoresUnicos = Array.from(
+    new Map(
+      ordenes
+        .filter(o => o.recibido_por)
+        .map(o => [o.recibido_por.id, o.recibido_por.nombre])
+    ).entries()
+  )
+    .map(([id, nombre]) => ({ id, nombre }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
   // Filtrar órdenes
   const ordenesFiltradas = ordenes.filter((orden) => {
     // Filtro por estado
@@ -300,6 +317,13 @@ export default function OrdenesPage() {
     }
     if (!esCompleto && !selectedPagos.has('incompleto')) {
       return false;
+    }
+
+    // Filtro por trabajador
+    if (selectedTrabajador !== 'todos') {
+      if (!orden.recibido_por || orden.recibido_por.id !== selectedTrabajador) {
+        return false;
+      }
     }
 
     // Filtro por búsqueda
@@ -449,7 +473,7 @@ export default function OrdenesPage() {
             </div>
           </div>
 
-          {/* Filtros de estado y pago en la misma línea */}
+          {/* Filtros de estado, trabajador y pago */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             {/* Filtros de estado */}
             <div>
@@ -481,6 +505,57 @@ export default function OrdenesPage() {
                 ))}
               </div>
             </div>
+
+            {/* Filtro por trabajador */}
+            {trabajadoresUnicos.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">Filtrar por trabajador:</p>
+                <div className="relative" ref={trabajadorDropdownRef}>
+                  <button
+                    onClick={() => setShowTrabajadorDropdown(!showTrabajadorDropdown)}
+                    className="w-full sm:w-48 px-4 py-2 bg-white border border-gray-300 rounded-lg text-left flex justify-between items-center hover:border-gray-400 transition-colors"
+                  >
+                    <span className="text-gray-700 truncate">
+                      {selectedTrabajador === 'todos'
+                        ? 'Todos'
+                        : trabajadoresUnicos.find(t => t.id === selectedTrabajador)?.nombre || 'Todos'}
+                    </span>
+                    <svg className="w-4 h-4 text-gray-500 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {showTrabajadorDropdown && (
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setSelectedTrabajador('todos');
+                          setShowTrabajadorDropdown(false);
+                        }}
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-100 first:rounded-t-lg text-sm ${
+                          selectedTrabajador === 'todos' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Todos
+                      </button>
+                      {trabajadoresUnicos.map((trabajador) => (
+                        <button
+                          key={trabajador.id}
+                          onClick={() => {
+                            setSelectedTrabajador(trabajador.id);
+                            setShowTrabajadorDropdown(false);
+                          }}
+                          className={`w-full px-4 py-2 text-left hover:bg-gray-100 last:rounded-b-lg text-sm ${
+                            selectedTrabajador === trabajador.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          {trabajador.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Filtros de pago - a la derecha */}
             <div>
