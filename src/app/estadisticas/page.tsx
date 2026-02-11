@@ -35,6 +35,7 @@ export default function EstadisticasPage() {
       .select(`
         *,
         cliente:clientes(id, nombre, telefono),
+        recibido_por:trabajadores(id, nombre),
         items:items_orden(precio, cantidad),
         pagos(monto)
       `)
@@ -139,6 +140,32 @@ export default function EstadisticasPage() {
   const topClientes = Array.from(clientesMap.values())
     .sort((a, b) => b.totalComprado - a.totalComprado)
     .slice(0, 10);
+
+  // Estadísticas por trabajador (filtradas por período)
+  const trabajadoresMap = new Map<string, {
+    id: string;
+    nombre: string;
+    ordenes: number;
+    totalGanancias: number;
+  }>();
+
+  ordenesPeriodo.forEach(orden => {
+    if (orden.recibido_por) {
+      const trabajadorId = orden.recibido_por.id;
+      const existing = trabajadoresMap.get(trabajadorId) || {
+        id: trabajadorId,
+        nombre: orden.recibido_por.nombre,
+        ordenes: 0,
+        totalGanancias: 0,
+      };
+      existing.ordenes++;
+      existing.totalGanancias += calcularTotalOrden(orden);
+      trabajadoresMap.set(trabajadorId, existing);
+    }
+  });
+
+  const trabajadoresStats = Array.from(trabajadoresMap.values())
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
   // Órdenes con saldo pendiente (TODAS las que actualmente tienen deuda)
   const ordenesConSaldo = ordenes
@@ -306,6 +333,53 @@ export default function EstadisticasPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Estadísticas por Trabajador */}
+        <Card className="mb-8">
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Trabajadores</h2>
+            <p className="text-sm text-gray-500">Órdenes recibidas y ganancias {getPeriodoLabel()}</p>
+          </CardHeader>
+          <CardContent>
+            {trabajadoresStats.length > 0 ? (
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <table className="w-full min-w-[320px]">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Trabajador</th>
+                      <th className="text-center py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Órdenes</th>
+                      <th className="text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Ganancias</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trabajadoresStats.map((trabajador) => (
+                      <tr key={trabajador.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-2 px-1 sm:px-2 font-medium text-xs sm:text-sm">{trabajador.nombre}</td>
+                        <td className="py-2 px-1 sm:px-2 text-center text-xs sm:text-sm">{trabajador.ordenes}</td>
+                        <td className="py-2 px-1 sm:px-2 text-right font-medium text-xs sm:text-sm">{formatCurrency(trabajador.totalGanancias)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  {trabajadoresStats.length > 1 && (
+                    <tfoot>
+                      <tr className="border-t-2 border-gray-300">
+                        <td className="py-2 px-1 sm:px-2 font-bold text-xs sm:text-sm">Total</td>
+                        <td className="py-2 px-1 sm:px-2 text-center font-bold text-xs sm:text-sm">
+                          {trabajadoresStats.reduce((sum, t) => sum + t.ordenes, 0)}
+                        </td>
+                        <td className="py-2 px-1 sm:px-2 text-right font-bold text-xs sm:text-sm">
+                          {formatCurrency(trabajadoresStats.reduce((sum, t) => sum + t.totalGanancias, 0))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No hay datos de trabajadores para {getPeriodoLabel()}</p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Top 10 Clientes */}
         <Card className="mb-8">
