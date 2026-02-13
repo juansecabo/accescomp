@@ -59,6 +59,7 @@ export default function OrdenesPage() {
   const [savingProximoNumero, setSavingProximoNumero] = useState(false);
   const [selectedTrabajador, setSelectedTrabajador] = useState<string>('todos');
   const [showTrabajadorDropdown, setShowTrabajadorDropdown] = useState(false);
+  const [trabajadoresActivos, setTrabajadoresActivos] = useState<{id: string; nombre: string}[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
   const estadoMenuRef = useRef<HTMLDivElement>(null);
   const pagoMenuRef = useRef<HTMLDivElement>(null);
@@ -69,7 +70,17 @@ export default function OrdenesPage() {
   useEffect(() => {
     loadOrdenes();
     loadProximoNumeroOrden();
+    loadTrabajadores();
   }, [sortAscending]);
+
+  const loadTrabajadores = async () => {
+    const { data } = await supabase
+      .from('trabajadores')
+      .select('id, nombre')
+      .eq('activo', true)
+      .order('nombre');
+    setTrabajadoresActivos(data || []);
+  };
 
   const loadProximoNumeroOrden = async () => {
     // Primero intentar obtener de la configuración
@@ -271,17 +282,6 @@ export default function OrdenesPage() {
       setDeleting(false);
     }
   };
-
-  // Extraer técnicos únicos de las órdenes
-  const tecnicosUnicos = Array.from(
-    new Map(
-      ordenes
-        .filter(o => o.tecnico_asignado)
-        .map(o => [o.tecnico_asignado.id, o.tecnico_asignado.nombre])
-    ).entries()
-  )
-    .map(([id, nombre]) => ({ id, nombre }))
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 
   // Filtrar órdenes
   const ordenesFiltradas = ordenes.filter((orden) => {
@@ -487,55 +487,53 @@ export default function OrdenesPage() {
             </div>
 
             {/* Filtro por técnico */}
-            {tecnicosUnicos.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Filtrar por técnico:</p>
-                <div className="relative" ref={trabajadorDropdownRef}>
-                  <button
-                    onClick={() => setShowTrabajadorDropdown(!showTrabajadorDropdown)}
-                    className="w-full sm:w-48 px-4 py-2 bg-white border border-gray-300 rounded-lg text-left flex justify-between items-center hover:border-gray-400 transition-colors"
-                  >
-                    <span className="text-gray-700 truncate">
-                      {selectedTrabajador === 'todos'
-                        ? 'Todos'
-                        : tecnicosUnicos.find(t => t.id === selectedTrabajador)?.nombre || 'Todos'}
-                    </span>
-                    <svg className="w-4 h-4 text-gray-500 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {showTrabajadorDropdown && (
-                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Filtrar por técnico:</p>
+              <div className="relative" ref={trabajadorDropdownRef}>
+                <button
+                  onClick={() => setShowTrabajadorDropdown(!showTrabajadorDropdown)}
+                  className="w-full sm:w-48 px-4 py-2 bg-white border border-gray-300 rounded-lg text-left flex justify-between items-center hover:border-gray-400 transition-colors"
+                >
+                  <span className="text-gray-700 truncate">
+                    {selectedTrabajador === 'todos'
+                      ? 'Todos'
+                      : trabajadoresActivos.find(t => t.id === selectedTrabajador)?.nombre || 'Todos'}
+                  </span>
+                  <svg className="w-4 h-4 text-gray-500 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showTrabajadorDropdown && (
+                  <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        setSelectedTrabajador('todos');
+                        setShowTrabajadorDropdown(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 first:rounded-t-lg text-sm ${
+                        selectedTrabajador === 'todos' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                      }`}
+                    >
+                      Todos
+                    </button>
+                    {trabajadoresActivos.map((tecnico) => (
                       <button
+                        key={tecnico.id}
                         onClick={() => {
-                          setSelectedTrabajador('todos');
+                          setSelectedTrabajador(tecnico.id);
                           setShowTrabajadorDropdown(false);
                         }}
-                        className={`w-full px-4 py-2 text-left hover:bg-gray-100 first:rounded-t-lg text-sm ${
-                          selectedTrabajador === 'todos' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                        className={`w-full px-4 py-2 text-left hover:bg-gray-100 last:rounded-b-lg text-sm ${
+                          selectedTrabajador === tecnico.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
                         }`}
                       >
-                        Todos
+                        {tecnico.nombre}
                       </button>
-                      {tecnicosUnicos.map((tecnico) => (
-                        <button
-                          key={tecnico.id}
-                          onClick={() => {
-                            setSelectedTrabajador(tecnico.id);
-                            setShowTrabajadorDropdown(false);
-                          }}
-                          className={`w-full px-4 py-2 text-left hover:bg-gray-100 last:rounded-b-lg text-sm ${
-                            selectedTrabajador === tecnico.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
-                          }`}
-                        >
-                          {tecnico.nombre}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Filtros de pago - a la derecha */}
             <div>
