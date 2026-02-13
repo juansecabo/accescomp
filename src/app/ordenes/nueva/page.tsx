@@ -8,13 +8,12 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Select } from '@/components/ui/Select';
 import { BuscadorClientes } from '@/components/BuscadorClientes';
 import { BuscadorTrabajadores } from '@/components/BuscadorTrabajadores';
 import { ItemsFacturacion } from '@/components/ItemsFacturacion';
 import { FirmaDigital } from '@/components/FirmaDigital';
 import { GrabadorVideo, subirArchivosTemporales } from '@/components/GrabadorVideo';
-import type { Cliente, ItemOrden, Tecnico, Trabajador } from '@/types';
+import type { Cliente, ItemOrden, Trabajador } from '@/types';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { parseCurrency, formatCurrency } from '@/lib/utils';
 
@@ -45,7 +44,6 @@ export default function NuevaOrdenPage() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [recibidoPor, setRecibidoPor] = useState<Trabajador | null>(null);
   const [tecnicoAsignado, setTecnicoAsignado] = useState<Trabajador | null>(null);
-  const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
   const [items, setItems] = useState<ItemOrden[]>([]);
   const [facturacionModificada, setFacturacionModificada] = useState(false);
   const [firma, setFirma] = useState<string | null>(null);
@@ -65,13 +63,11 @@ export default function NuevaOrdenPage() {
     observaciones: '',
     motivo_visita: '',
     trabajo_realizar: '',
-    tecnico_id: '',
     condiciones_aceptadas: false,
     abono: '',
   });
 
   useEffect(() => {
-    loadTecnicos();
     loadCondicionesGlobales();
     if (clienteIdParam) {
       loadClientePreseleccionado(clienteIdParam);
@@ -145,14 +141,6 @@ export default function NuevaOrdenPage() {
     }
   };
 
-  const loadTecnicos = async () => {
-    const { data } = await supabase.from('tecnicos').select('*');
-    setTecnicos(data || []);
-    if (data && data.length > 0) {
-      setFormData(prev => ({ ...prev, tecnico_id: data[0].id }));
-    }
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -214,7 +202,6 @@ export default function NuevaOrdenPage() {
         .insert({
           numero_orden: numeroOrden,
           cliente_id: cliente.id,
-          tecnico_id: formData.tecnico_id || null,
           recibido_por_id: recibidoPor?.id || null,
           tecnico_asignado_id: tecnicoAsignado?.id || null,
           equipo_descripcion: formData.equipo_descripcion,
