@@ -44,6 +44,7 @@ export default function NuevaOrdenPage() {
 
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [recibidoPor, setRecibidoPor] = useState<Trabajador | null>(null);
+  const [tecnicoAsignado, setTecnicoAsignado] = useState<Trabajador | null>(null);
   const [tecnicos, setTecnicos] = useState<Tecnico[]>([]);
   const [items, setItems] = useState<ItemOrden[]>([]);
   const [facturacionModificada, setFacturacionModificada] = useState(false);
@@ -215,6 +216,7 @@ export default function NuevaOrdenPage() {
           cliente_id: cliente.id,
           tecnico_id: formData.tecnico_id || null,
           recibido_por_id: recibidoPor?.id || null,
+          tecnico_asignado_id: tecnicoAsignado?.id || null,
           equipo_descripcion: formData.equipo_descripcion,
           observaciones: formData.observaciones,
           motivo_visita: formData.motivo_visita,
@@ -389,16 +391,13 @@ export default function NuevaOrdenPage() {
                 onChange={handleChange}
                 required
               />
-              {tecnicos.length > 0 && (
-                <Select
-                  id="tecnico_id"
-                  name="tecnico_id"
-                  label="Técnico asignado"
-                  value={formData.tecnico_id}
-                  onChange={handleChange}
-                  options={tecnicos.map(t => ({ value: t.id, label: t.nombre }))}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Técnico asignado</label>
+                <BuscadorTrabajadores
+                  onTrabajadorSelect={setTecnicoAsignado}
+                  trabajadorSeleccionado={tecnicoAsignado}
                 />
-              )}
+              </div>
             </CardContent>
           </Card>
 

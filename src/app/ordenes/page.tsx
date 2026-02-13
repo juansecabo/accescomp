@@ -141,7 +141,8 @@ export default function OrdenesPage() {
       .select(`
         *,
         cliente:clientes(id, nombre, telefono, tipo_documento, numero_documento),
-        recibido_por:trabajadores(id, nombre),
+        recibido_por:trabajadores!recibido_por_id(id, nombre),
+        tecnico_asignado:trabajadores!tecnico_asignado_id(id, nombre),
         items:items_orden(precio, cantidad),
         pagos(monto)
       `)
@@ -271,12 +272,12 @@ export default function OrdenesPage() {
     }
   };
 
-  // Extraer trabajadores únicos de las órdenes
-  const trabajadoresUnicos = Array.from(
+  // Extraer técnicos únicos de las órdenes
+  const tecnicosUnicos = Array.from(
     new Map(
       ordenes
-        .filter(o => o.recibido_por)
-        .map(o => [o.recibido_por.id, o.recibido_por.nombre])
+        .filter(o => o.tecnico_asignado)
+        .map(o => [o.tecnico_asignado.id, o.tecnico_asignado.nombre])
     ).entries()
   )
     .map(([id, nombre]) => ({ id, nombre }))
@@ -298,9 +299,9 @@ export default function OrdenesPage() {
       if (filtroPago === 'incompleto' && esCompleto) return false;
     }
 
-    // Filtro por trabajador
+    // Filtro por técnico
     if (selectedTrabajador !== 'todos') {
-      if (!orden.recibido_por || orden.recibido_por.id !== selectedTrabajador) {
+      if (!orden.tecnico_asignado || orden.tecnico_asignado.id !== selectedTrabajador) {
         return false;
       }
     }
@@ -485,10 +486,10 @@ export default function OrdenesPage() {
               </div>
             </div>
 
-            {/* Filtro por trabajador */}
-            {trabajadoresUnicos.length > 0 && (
+            {/* Filtro por técnico */}
+            {tecnicosUnicos.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Filtrar por trabajador:</p>
+                <p className="text-sm font-medium text-gray-700 mb-2">Filtrar por técnico:</p>
                 <div className="relative" ref={trabajadorDropdownRef}>
                   <button
                     onClick={() => setShowTrabajadorDropdown(!showTrabajadorDropdown)}
@@ -497,7 +498,7 @@ export default function OrdenesPage() {
                     <span className="text-gray-700 truncate">
                       {selectedTrabajador === 'todos'
                         ? 'Todos'
-                        : trabajadoresUnicos.find(t => t.id === selectedTrabajador)?.nombre || 'Todos'}
+                        : tecnicosUnicos.find(t => t.id === selectedTrabajador)?.nombre || 'Todos'}
                     </span>
                     <svg className="w-4 h-4 text-gray-500 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -516,18 +517,18 @@ export default function OrdenesPage() {
                       >
                         Todos
                       </button>
-                      {trabajadoresUnicos.map((trabajador) => (
+                      {tecnicosUnicos.map((tecnico) => (
                         <button
-                          key={trabajador.id}
+                          key={tecnico.id}
                           onClick={() => {
-                            setSelectedTrabajador(trabajador.id);
+                            setSelectedTrabajador(tecnico.id);
                             setShowTrabajadorDropdown(false);
                           }}
                           className={`w-full px-4 py-2 text-left hover:bg-gray-100 last:rounded-b-lg text-sm ${
-                            selectedTrabajador === trabajador.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                            selectedTrabajador === tecnico.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
                           }`}
                         >
-                          {trabajador.nombre}
+                          {tecnico.nombre}
                         </button>
                       ))}
                     </div>

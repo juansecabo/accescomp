@@ -31,7 +31,8 @@ export async function GET(
       *,
       cliente:clientes(*),
       tecnico:tecnicos(*),
-      recibido_por:trabajadores(*)
+      recibido_por:trabajadores!recibido_por_id(*),
+      tecnico_asignado:trabajadores!tecnico_asignado_id(*)
     `)
     .eq('id', ordenId)
     .single();
@@ -165,8 +166,8 @@ export async function GET(
   doc.text(trabajoLines, 20, y);
   y += trabajoLines.length * 5 + 3;
 
-  if (orden.tecnico) {
-    doc.text(`Técnico: ${orden.tecnico.nombre}`, 20, y);
+  if (orden.tecnico_asignado) {
+    doc.text(`Técnico asignado: ${orden.tecnico_asignado.nombre}`, 20, y);
     y += 5;
   }
   y += 10;

@@ -44,6 +44,7 @@ export default function OrdenDetailPage() {
   });
   const [editItems, setEditItems] = useState<ItemOrden[]>([]);
   const [editRecibidoPor, setEditRecibidoPor] = useState<Trabajador | null>(null);
+  const [editTecnicoAsignado, setEditTecnicoAsignado] = useState<Trabajador | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Estados para el menú de condiciones en edición
@@ -113,7 +114,8 @@ export default function OrdenDetailPage() {
         *,
         cliente:clientes(*),
         tecnico:tecnicos(*),
-        recibido_por:trabajadores(*)
+        recibido_por:trabajadores!recibido_por_id(*),
+        tecnico_asignado:trabajadores!tecnico_asignado_id(*)
       `)
       .eq('id', ordenId)
       .single();
@@ -129,6 +131,7 @@ export default function OrdenDetailPage() {
         firma_cliente: ordenData.firma_cliente || null,
       });
       setEditRecibidoPor(ordenData.recibido_por || null);
+      setEditTecnicoAsignado(ordenData.tecnico_asignado || null);
 
       // Cargar items
       const { data: itemsData } = await supabase
@@ -204,6 +207,7 @@ export default function OrdenDetailPage() {
         observaciones: editData.observaciones,
         trabajo_realizar: editData.trabajo_realizar,
         recibido_por_id: editRecibidoPor?.id || null,
+        tecnico_asignado_id: editTecnicoAsignado?.id || null,
         condiciones_servicio: editData.condiciones_servicio,
         condiciones_aceptadas: editData.condiciones_aceptadas,
         firma_cliente: editData.firma_cliente,
@@ -237,6 +241,8 @@ export default function OrdenDetailPage() {
         trabajo_realizar: editData.trabajo_realizar,
         recibido_por: editRecibidoPor,
         recibido_por_id: editRecibidoPor?.id || null,
+        tecnico_asignado: editTecnicoAsignado,
+        tecnico_asignado_id: editTecnicoAsignado?.id || null,
         condiciones_servicio: editData.condiciones_servicio,
         condiciones_aceptadas: editData.condiciones_aceptadas,
         firma_cliente: editData.firma_cliente,
@@ -413,6 +419,7 @@ export default function OrdenDetailPage() {
               });
               setEditItems([...items]);
               setEditRecibidoPor(orden.recibido_por || null);
+              setEditTecnicoAsignado(orden.tecnico_asignado || null);
               setEditTab('equipo');
               setShowEditModal(true);
             }}>
@@ -500,6 +507,13 @@ export default function OrdenDetailPage() {
                       onChange={(e) => setEditData({ ...editData, trabajo_realizar: e.target.value })}
                       rows={3}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Técnico asignado</label>
+                    <BuscadorTrabajadores
+                      onTrabajadorSelect={setEditTecnicoAsignado}
+                      trabajadorSeleccionado={editTecnicoAsignado}
                     />
                   </div>
                 </div>
@@ -746,10 +760,10 @@ export default function OrdenDetailPage() {
                 <p className="text-sm text-gray-500">Trabajo a realizar</p>
                 <p className="whitespace-pre-wrap">{orden.trabajo_realizar || 'N/A'}</p>
               </div>
-              {orden.tecnico && (
+              {orden.tecnico_asignado && (
                 <div>
                   <p className="text-sm text-gray-500">Técnico asignado</p>
-                  <p className="font-medium">{orden.tecnico.nombre}</p>
+                  <p className="font-medium">{orden.tecnico_asignado.nombre}</p>
                 </div>
               )}
             </CardContent>

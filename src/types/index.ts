@@ -33,6 +33,7 @@ export interface Orden {
   trabajo_realizar: string;
   estado: 'recibido' | 'en_proceso' | 'listo' | 'entregado';
   recibido_por_id?: string;
+  tecnico_asignado_id?: string;
   firma_cliente?: string;
   condiciones_aceptadas: boolean;
   created_at: string;
@@ -41,6 +42,7 @@ export interface Orden {
   cliente?: Cliente;
   tecnico?: Tecnico;
   recibido_por?: Trabajador;
+  tecnico_asignado?: Trabajador;
   items?: ItemOrden[];
   pagos?: Pago[];
   archivos?: ArchivoOrden[];
