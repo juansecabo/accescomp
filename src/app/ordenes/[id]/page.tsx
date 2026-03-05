@@ -823,8 +823,8 @@ export default function OrdenDetailPage() {
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center mb-3">
                   <p className="text-sm font-medium text-gray-700">Pagos / Abonos</p>
-                  <div className="flex items-center gap-3">
-                    {calcularSaldo() > 0 ? (
+                  {!showAbonoForm && calcularSaldo() > 0 && (
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={async () => {
                           const saldo = calcularSaldo();
@@ -842,17 +842,6 @@ export default function OrdenDetailPage() {
                         <span className="w-4 h-4 border-2 border-gray-400 rounded hover:border-green-500 flex-shrink-0" />
                         Pago completo
                       </button>
-                    ) : (
-                      <span className="text-sm text-green-600 font-medium flex items-center gap-1.5">
-                        <span className="w-4 h-4 bg-green-500 rounded flex-shrink-0 flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </span>
-                        Pago completo
-                      </span>
-                    )}
-                    {!showAbonoForm && calcularSaldo() > 0 && (
                       <button
                         onClick={() => setShowAbonoForm(true)}
                         className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
@@ -862,8 +851,8 @@ export default function OrdenDetailPage() {
                         </svg>
                         Agregar abono
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Formulario de nuevo abono */}
