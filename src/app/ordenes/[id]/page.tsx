@@ -837,11 +837,9 @@ export default function OrdenDetailPage() {
                             setPagos([data, ...pagos]);
                           }
                         }}
-                        className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+                        className="text-sm text-gray-600 hover:text-green-600 font-medium flex items-center gap-1.5 transition-colors"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <span className="w-4 h-4 border-2 border-gray-400 rounded hover:border-green-500 flex-shrink-0" />
                         Pago completo
                       </button>
                       <button
