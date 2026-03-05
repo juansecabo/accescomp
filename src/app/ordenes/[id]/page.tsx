@@ -824,15 +824,36 @@ export default function OrdenDetailPage() {
                 <div className="flex justify-between items-center mb-3">
                   <p className="text-sm font-medium text-gray-700">Pagos / Abonos</p>
                   {!showAbonoForm && calcularSaldo() > 0 && (
-                    <button
-                      onClick={() => setShowAbonoForm(true)}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                      Agregar abono
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={async () => {
+                          const saldo = calcularSaldo();
+                          if (saldo <= 0) return;
+                          const { data, error } = await supabase.from('pagos').insert({
+                            orden_id: ordenId,
+                            monto: saldo,
+                          }).select().single();
+                          if (!error && data) {
+                            setPagos([data, ...pagos]);
+                          }
+                        }}
+                        className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Pago completo
+                      </button>
+                      <button
+                        onClick={() => setShowAbonoForm(true)}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Agregar abono
+                      </button>
+                    </div>
                   )}
                 </div>
 
