@@ -103,29 +103,7 @@ export async function GET(
 
   if (orden.recibido_por) {
     doc.text(`Recibido por: ${orden.recibido_por.nombre}`, pageWidth / 2, y, { align: 'center' });
-    y += 6;
   }
-
-  // Estado de la orden con fecha
-  const estadoLabels: Record<string, string> = {
-    recibido: 'Recibido',
-    en_proceso: 'En Proceso',
-    listo: 'Listo',
-    entregado: 'Entregado',
-  };
-  const estadoLabel = estadoLabels[orden.estado] || orden.estado;
-  const estadoFecha = orden.estado === 'recibido' ? orden.created_at : orden.updated_at;
-  const estadoFechaStr = new Date(estadoFecha).toLocaleDateString('es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Bogota',
-  });
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Estado: ${estadoLabel} - ${estadoFechaStr}`, pageWidth / 2, y, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
   y += 10;
 
   // Línea separadora
