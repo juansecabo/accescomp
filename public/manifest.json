@@ -1,0 +1,24 @@
+{
+  "name": "Accescomp - Servicio Técnico",
+  "short_name": "Accescomp",
+  "description": "Sistema de gestión de órdenes de servicio técnico",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "221x198",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "221x198",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

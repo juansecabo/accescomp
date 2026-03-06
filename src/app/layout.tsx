@@ -10,6 +10,14 @@ export const metadata: Metadata = {
   description: "Sistema de gestión de órdenes de servicio técnico",
   icons: {
     icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#2563eb",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Accescomp",
   },
 };
 
