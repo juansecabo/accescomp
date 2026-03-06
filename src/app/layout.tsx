@@ -33,6 +33,15 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.className} antialiased bg-gray-50`}>
         <Providers>{children}</Providers>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js');
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
