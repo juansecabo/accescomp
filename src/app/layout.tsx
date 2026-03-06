@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Sistema de gestión de órdenes de servicio técnico",
   icons: {
     icon: "/favicon.png",
-    apple: "/favicon.png",
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
   appleWebApp: {
