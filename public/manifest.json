@@ -4,7 +4,7 @@
   "description": "Sistema de gestión de órdenes de servicio técnico",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
+  "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "icons": [
