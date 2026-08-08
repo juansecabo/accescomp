@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { AppShell } from '@/components/AppShell';
+import { ProximaOrden } from '@/components/ProximaOrden';
 import {
   OrdenesTable,
   calcularTotalOrden,
@@ -45,17 +46,12 @@ export default function OrdenesPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
-  const [proximoNumeroOrden, setProximoNumeroOrden] = useState<number | null>(null);
-  const [editandoProximoNumero, setEditandoProximoNumero] = useState(false);
-  const [nuevoProximoNumero, setNuevoProximoNumero] = useState('');
-  const [savingProximoNumero, setSavingProximoNumero] = useState(false);
   const [selectedTrabajador, setSelectedTrabajador] = useState<string>('todos');
   const [trabajadoresActivos, setTrabajadoresActivos] = useState<{id: string; nombre: string}[]>([]);
   const supabase = createClient();
 
   useEffect(() => {
     loadOrdenes();
-    loadProximoNumeroOrden();
     loadTrabajadores();
   }, [sortAscending]);
 
@@ -66,47 +62,6 @@ export default function OrdenesPage() {
       .eq('activo', true)
       .order('nombre');
     setTrabajadoresActivos(data || []);
-  };
-
-  const loadProximoNumeroOrden = async () => {
-    // Primero intentar obtener de la configuración
-    const { data: config } = await supabase
-      .from('configuracion')
-      .select('proximo_numero_orden')
-      .eq('id', 1)
-      .single();
-
-    if (config?.proximo_numero_orden) {
-      setProximoNumeroOrden(config.proximo_numero_orden);
-    } else {
-      // Si no existe, calcular basado en las órdenes existentes
-      const { data: maxOrden } = await supabase
-        .from('ordenes')
-        .select('numero_orden')
-        .order('numero_orden', { ascending: false })
-        .limit(1)
-        .single();
-
-      const siguiente = (maxOrden?.numero_orden || 0) + 1;
-      setProximoNumeroOrden(siguiente);
-    }
-  };
-
-  const handleGuardarProximoNumero = async () => {
-    const numero = parseInt(nuevoProximoNumero);
-    if (isNaN(numero) || numero < 1) return;
-
-    setSavingProximoNumero(true);
-    const { error } = await supabase
-      .from('configuracion')
-      .update({ proximo_numero_orden: numero })
-      .eq('id', 1);
-
-    if (!error) {
-      setProximoNumeroOrden(numero);
-      setEditandoProximoNumero(false);
-    }
-    setSavingProximoNumero(false);
   };
 
   const loadOrdenes = async () => {
@@ -412,48 +367,7 @@ export default function OrdenesPage() {
       count={loading ? '...' : `${ordenesFiltradas.length} de ${ordenes.length}`}
       actions={
         <>
-          {editandoProximoNumero ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-medium text-slate-600 whitespace-nowrap">Próxima orden #</span>
-              <input
-                type="number"
-                value={nuevoProximoNumero}
-                onChange={(e) => setNuevoProximoNumero(e.target.value)}
-                className="w-20 px-2 py-1 h-[38px] text-sm font-mono border border-line-strong rounded-field"
-                min="1"
-              />
-              <button
-                onClick={handleGuardarProximoNumero}
-                disabled={savingProximoNumero}
-                className="px-3 h-[38px] text-xs font-bold bg-brand text-white rounded-field hover:bg-brand-hover disabled:opacity-50 transition-colors duration-150"
-              >
-                {savingProximoNumero ? '...' : 'Guardar'}
-              </button>
-              <button
-                onClick={() => setEditandoProximoNumero(false)}
-                className="px-3 h-[38px] text-xs font-semibold bg-surface border border-line-strong text-slate-600 rounded-field hover:border-slate-300 transition-colors duration-150"
-              >
-                Cancelar
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setNuevoProximoNumero(proximoNumeroOrden?.toString() || '1');
-                setEditandoProximoNumero(true);
-              }}
-              className="hidden sm:flex items-center gap-2 px-3 py-[9px] border border-line rounded-field text-[13px] font-medium text-slate-600 whitespace-nowrap hover:border-line-strong transition-colors duration-150"
-              title="Click para editar"
-            >
-              Próxima orden{' '}
-              <span className="font-mono font-bold text-[13px] text-slate-900">
-                #{proximoNumeroOrden || '...'}
-              </span>
-              <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
-          )}
+          <ProximaOrden />
           <Link
             href="/ordenes/nueva"
             className="px-[14px] py-[10px] rounded-field bg-brand hover:bg-brand-hover text-white font-bold text-[13px] whitespace-nowrap transition-colors duration-150"

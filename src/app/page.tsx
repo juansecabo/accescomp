@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { AppShell } from '@/components/AppShell';
+import { ProximaOrden } from '@/components/ProximaOrden';
 import {
   OrdenesTable,
   calcularTotalOrden,
@@ -16,7 +17,6 @@ import { type EstadoOrden } from '@/types';
 export default function Dashboard() {
   const [ordenes, setOrdenes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [proximoNumeroOrden, setProximoNumeroOrden] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [ordenToDelete, setOrdenToDelete] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
@@ -24,7 +24,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadOrdenes();
-    loadProximoNumeroOrden();
   }, []);
 
   const loadOrdenes = async () => {
@@ -41,18 +40,6 @@ export default function Dashboard() {
 
     setOrdenes(data || []);
     setLoading(false);
-  };
-
-  const loadProximoNumeroOrden = async () => {
-    const { data: config } = await supabase
-      .from('configuracion')
-      .select('proximo_numero_orden')
-      .eq('id', 1)
-      .single();
-
-    if (config?.proximo_numero_orden) {
-      setProximoNumeroOrden(config.proximo_numero_orden);
-    }
   };
 
   const handleSetPagoCompleto = async (orden: any) => {
@@ -178,12 +165,7 @@ export default function Dashboard() {
       subtitle={hoyTexto.charAt(0).toUpperCase() + hoyTexto.slice(1)}
       actions={
         <>
-          {proximoNumeroOrden !== null && (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-[9px] border border-line rounded-field text-[13px] font-medium text-slate-600 whitespace-nowrap">
-              Próxima orden{' '}
-              <span className="font-mono font-bold text-[13px] text-slate-900">#{proximoNumeroOrden}</span>
-            </div>
-          )}
+          <ProximaOrden />
           <Link
             href="/ordenes/nueva"
             className="px-[14px] py-[10px] rounded-field bg-brand hover:bg-brand-hover text-white font-bold text-[13px] whitespace-nowrap transition-colors duration-150"
