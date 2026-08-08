@@ -214,7 +214,7 @@ export function AppShell({ breadcrumb, title, subtitle, count, actions, toolbar,
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-[rgba(13,27,42,.55)]" onClick={() => setDrawerOpen(false)} />
-          <div className="absolute left-0 top-0 h-full animate-fade-in">
+          <div className="absolute left-0 top-0 h-full animate-slide-in-left">
             <Sidebar {...sidebarProps} onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>

@@ -65,6 +65,7 @@ const config: Config = {
         'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'shake': 'shake 0.5s ease-in-out',
+        'slide-in-left': 'slideInLeft 0.25s ease-out forwards',
         'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
@@ -75,6 +76,10 @@ const config: Config = {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInLeft: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
         },
         shake: {
           '0%, 100%': { transform: 'translateX(0)' },
