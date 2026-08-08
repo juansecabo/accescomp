@@ -177,6 +177,9 @@ export function AppShell({ breadcrumb, title, subtitle, count, actions, toolbar,
     setShowConfirmPassword(false);
   };
 
+  // En la app de escritorio (modo local) no tiene sentido "Descargar App"
+  const esAppInstalable = process.env.NEXT_PUBLIC_DATA_MODE === 'local';
+
   const sidebarProps = {
     onChangePassword: () => {
       setDrawerOpen(false);
@@ -186,7 +189,7 @@ export function AppShell({ breadcrumb, title, subtitle, count, actions, toolbar,
       setDrawerOpen(false);
       handleInstallApp();
     },
-    isInstalled,
+    isInstalled: isInstalled || esAppInstalable,
     onLogout: logout,
   };
 
