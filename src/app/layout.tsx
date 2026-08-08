@@ -1,12 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-mono",
+});
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#0d1b2a",
 };
 
 export const metadata: Metadata = {
@@ -31,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.className} antialiased bg-gray-50`}>
+      <body className={`${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased bg-page`}>
         <Providers>{children}</Providers>
         <script
           dangerouslySetInnerHTML={{
