@@ -38,3 +38,4 @@ next-env.d.ts
 # Semilla de datos (contiene datos personales - no subir)
 /seed/
 /localdata/
+/dist-electron/

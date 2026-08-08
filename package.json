@@ -1,12 +1,39 @@
 {
-  "name": "accescomp-claude",
-  "version": "0.1.0",
+  "name": "accescomp-gestion",
+  "version": "1.0.0",
   "private": true,
+  "description": "Accescomp Gestión - órdenes de servicio técnico",
+  "author": "Accescomp",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dist:win": "node scripts/build-installer.mjs"
+  },
+  "build": {
+    "appId": "com.accescomp.gestion",
+    "productName": "Accescomp Gestion",
+    "npmRebuild": false,
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**",
+      "public/pwa-512x512.png"
+    ],
+    "afterPack": "scripts/after-pack.cjs",
+    "win": {
+      "target": "nsis",
+      "icon": "public/pwa-512x512.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Accescomp Gestión"
+    }
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -22,12 +49,15 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-signature-canvas": "^1.0.7",
     "@types/uuid": "^10.0.0",
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",
