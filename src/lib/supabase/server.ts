@@ -1,7 +1,18 @@
 import { createServerClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { crearClienteLocal } from '@/lib/localdb/builder';
 
-export async function createClient() {
+// Modo local (app instalable): consulta el motor SQLite directamente.
+const MODO_LOCAL = process.env.NEXT_PUBLIC_DATA_MODE === 'local';
+
+export async function createClient(): Promise<SupabaseClient> {
+  if (MODO_LOCAL) {
+    const { ejecutarConsulta } = await import('@/lib/localdb/engine');
+    // Implementa el subconjunto del API de supabase-js que usa esta app
+    return crearClienteLocal(async (q) => ejecutarConsulta(q)) as unknown as SupabaseClient;
+  }
+
   const cookieStore = await cookies();
 
   return createServerClient(

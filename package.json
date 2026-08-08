@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.93.3",
+    "better-sqlite3": "^13.0.3",
     "clsx": "^2.1.1",
     "jspdf": "^4.0.0",
     "next": "14.2.35",
@@ -21,6 +22,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
