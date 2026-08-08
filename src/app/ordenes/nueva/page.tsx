@@ -3,9 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Navbar } from '@/components/Navbar';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { AppShell } from '@/components/AppShell';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { BuscadorClientes } from '@/components/BuscadorClientes';
@@ -14,8 +12,7 @@ import { ItemsFacturacion } from '@/components/ItemsFacturacion';
 import { FirmaDigital } from '@/components/FirmaDigital';
 import { GrabadorVideo, subirArchivosTemporales } from '@/components/GrabadorVideo';
 import type { Cliente, ItemOrden, Trabajador } from '@/types';
-import { Breadcrumb } from '@/components/Breadcrumb';
-import { parseCurrency, formatCurrency } from '@/lib/utils';
+import { parseCurrency, formatCurrency, cn } from '@/lib/utils';
 
 interface ArchivoTemporal {
   id: string;
@@ -276,59 +273,79 @@ export default function NuevaOrdenPage() {
     }
   };
 
+  const cardClass = 'bg-surface border border-line rounded-card overflow-hidden';
+
+  const seccionHeader = (numero: string, titulo: string, extra?: React.ReactNode) => (
+    <div className="px-4 py-[11px] border-b border-line-soft flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <span className="w-5 h-5 rounded bg-navy-900 text-white font-mono font-bold text-[11px] flex items-center justify-center">
+          {numero}
+        </span>
+        <h2 className="font-bold text-[13px] text-slate-900">{titulo}</h2>
+      </div>
+      {extra}
+    </div>
+  );
+
+  // Requisitos para el checklist "Falta por completar"
+  const requisitos = [
+    { label: 'Cliente seleccionado', ok: !!cliente },
+    { label: 'Descripción del equipo', ok: !!formData.equipo_descripcion.trim() },
+    { label: 'Trabajo a realizar', ok: !!formData.trabajo_realizar.trim() },
+    { label: 'Condiciones aceptadas', ok: formData.condiciones_aceptadas },
+  ];
+
+  const resumenFila = (label: string, value: React.ReactNode) => (
+    <div className="flex justify-between items-baseline gap-3 py-[6px] border-b border-navy-700 last:border-0">
+      <span className="text-[11px] font-semibold uppercase tracking-[.09em] text-sidenav flex-none">{label}</span>
+      <span className="text-[13px] font-medium text-sidenav-strong text-right truncate">{value}</span>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <Breadcrumb items={[
+    <AppShell
+      breadcrumb={[
         { label: 'Inicio', href: '/' },
         { label: 'Órdenes', href: '/ordenes' },
-        { label: 'Nueva Orden' }
-      ]} />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Nueva Orden de Servicio</h1>
-          <p className="text-gray-600">Complete los datos para registrar una nueva orden</p>
-        </div>
+        { label: 'Nueva orden' },
+      ]}
+      title="Nueva orden de servicio"
+      subtitle="Complete los datos para registrar una nueva orden"
+    >
+      <div className="p-4 sm:p-6 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-[18px] items-start">
+        <form id="nueva-orden-form" onSubmit={handleSubmit} className="flex flex-col gap-[14px] min-w-0">
+          {error && (
+            <div className="p-4 bg-[#fef2f2] border-l-[3px] border-[#dc2626] text-[#b91c1c] text-sm rounded-r-lg animate-shake">
+              {error}
+            </div>
+          )}
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Sección 1: Cliente */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">1. Cliente</h2>
-            </CardHeader>
-            <CardContent>
+          <div className={cardClass}>
+            {seccionHeader('1', 'Cliente')}
+            <div className="px-4 py-[14px]">
               <BuscadorClientes
                 onClienteSelect={setCliente}
                 clienteSeleccionado={cliente}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Sección 2: Recibido por */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">2. Recibido por</h2>
-            </CardHeader>
-            <CardContent>
+          <div className={cardClass}>
+            {seccionHeader('2', 'Recibido por')}
+            <div className="px-4 py-[14px]">
               <BuscadorTrabajadores
                 onTrabajadorSelect={setRecibidoPor}
                 trabajadorSeleccionado={recibidoPor}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Sección 3: Equipo */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">3. Equipo</h2>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className={cardClass}>
+            {seccionHeader('3', 'Equipo')}
+            <div className="px-4 py-[14px] space-y-4">
               <Textarea
                 id="equipo_descripcion"
                 name="equipo_descripcion"
@@ -351,7 +368,7 @@ export default function NuevaOrdenPage() {
 
               {/* Fotos y Videos */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Fotos / Videos del equipo
                 </label>
                 <GrabadorVideo
@@ -359,15 +376,13 @@ export default function NuevaOrdenPage() {
                   archivosTemporales={archivosTemporales}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Sección 4: Servicio */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">4. Servicio</h2>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className={cardClass}>
+            {seccionHeader('4', 'Servicio')}
+            <div className="px-4 py-[14px] space-y-4">
               <Textarea
                 id="trabajo_realizar"
                 name="trabajo_realizar"
@@ -379,21 +394,19 @@ export default function NuevaOrdenPage() {
                 required
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Técnico asignado</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Técnico asignado</label>
                 <BuscadorTrabajadores
                   onTrabajadorSelect={setTecnicoAsignado}
                   trabajadorSeleccionado={tecnicoAsignado}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Sección 5: Facturación */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">5. Facturación</h2>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className={cardClass}>
+            {seccionHeader('5', 'Facturación')}
+            <div className="px-4 py-[14px] space-y-4">
               <ItemsFacturacion
                 items={items}
                 onItemsChange={setItems}
@@ -402,7 +415,7 @@ export default function NuevaOrdenPage() {
               />
 
               {items.length > 0 && (
-                <div className="border-t pt-4 space-y-2">
+                <div className="border-t border-line-soft pt-4 space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="max-w-xs">
                       <Input
@@ -416,78 +429,80 @@ export default function NuevaOrdenPage() {
                         onChange={handleChange}
                       />
                       {formData.abono && parseCurrency(formData.abono) > calcularTotal() && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p className="text-[#b91c1c] text-sm mt-1">
                           El abono no puede exceder el total ({formatCurrency(calcularTotal())})
                         </p>
                       )}
                       {formData.abono && parseCurrency(formData.abono) === 0 && formData.abono.trim() !== '' && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p className="text-[#b91c1c] text-sm mt-1">
                           Valor inválido
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg">
+                    <p className="text-[13px] font-medium text-slate-500">
                       Saldo pendiente:{' '}
-                      <span className="font-bold text-xl">
+                      <span className="font-mono font-bold text-[22px] text-slate-900">
                         {formatCurrency(Math.max(0, calcularSaldo()))}
                       </span>
                     </p>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Sección 6: Contrato */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">6. Condiciones del Servicio</h2>
-                <div className="relative" ref={condicionesMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setShowCondicionesMenu(!showCondicionesMenu)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                    </svg>
-                  </button>
-                  {showCondicionesMenu && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-30">
-                      <div className="py-1">
-                        <button
-                          type="button"
-                          onClick={() => handleEditCondiciones('orden')}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
-                        >
-                          Editar condiciones de esta orden
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleEditCondiciones('cliente')}
-                          disabled={!cliente}
-                          className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 ${!cliente ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700'}`}
-                        >
-                          Editar condiciones de este cliente
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleEditCondiciones('global')}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
-                        >
-                          Editar condiciones de todas las órdenes
-                        </button>
-                      </div>
+          {/* Sección 6: Condiciones */}
+          <div className={cardClass}>
+            {seccionHeader(
+              '6',
+              'Condiciones del servicio',
+              <div className="relative" ref={condicionesMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowCondicionesMenu(!showCondicionesMenu)}
+                  className="p-2 hover:bg-control rounded-full transition-colors duration-150"
+                >
+                  <svg className="w-5 h-5 text-slate-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                  </svg>
+                </button>
+                {showCondicionesMenu && (
+                  <div className="absolute right-0 mt-2 w-64 bg-surface border border-line rounded-lg shadow-menu z-30">
+                    <div className="py-1">
+                      <button
+                        type="button"
+                        onClick={() => handleEditCondiciones('orden')}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-surface-muted text-slate-700"
+                      >
+                        Editar condiciones de esta orden
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleEditCondiciones('cliente')}
+                        disabled={!cliente}
+                        className={cn(
+                          'w-full px-4 py-2 text-left text-sm hover:bg-surface-muted',
+                          !cliente ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'
+                        )}
+                      >
+                        Editar condiciones de este cliente
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleEditCondiciones('global')}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-surface-muted text-slate-700"
+                      >
+                        Editar condiciones de todas las órdenes
+                      </button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-gray-50 rounded-lg text-sm whitespace-pre-line">
+            )}
+            <div className="px-4 py-[14px] space-y-4">
+              <div className="p-4 bg-surface-muted rounded-field text-[11px] leading-[1.7] text-slate-500 whitespace-pre-line">
                 {condicionesTexto}
               </div>
 
@@ -502,62 +517,120 @@ export default function NuevaOrdenPage() {
                   className="mt-1 w-4 h-4"
                   required
                 />
-                <span className="text-sm text-gray-700">
-                  El cliente acepta las condiciones del servicio y autoriza el trabajo descrito <span className="text-red-500">*</span>
+                <span className="text-sm text-slate-700">
+                  El cliente acepta las condiciones del servicio y autoriza el trabajo descrito{' '}
+                  <span className="text-[#b91c1c]">*</span>
                 </span>
               </label>
-            </CardContent>
-          </Card>
-
-          {/* Modal editar condiciones */}
-          {showCondicionesModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50" onClick={() => setShowCondicionesModal(false)} />
-              <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  {condicionesModalTipo === 'orden' && 'Editar condiciones de esta orden'}
-                  {condicionesModalTipo === 'cliente' && 'Editar condiciones del cliente'}
-                  {condicionesModalTipo === 'global' && 'Editar condiciones globales'}
-                </h2>
-                <p className="text-sm text-gray-500 mb-4">
-                  {condicionesModalTipo === 'orden' && 'Estas condiciones solo aplicarán a esta orden.'}
-                  {condicionesModalTipo === 'cliente' && 'Estas condiciones se usarán por defecto en todas las órdenes de este cliente.'}
-                  {condicionesModalTipo === 'global' && 'Estas condiciones se usarán por defecto en todas las órdenes nuevas.'}
-                </p>
-                <textarea
-                  value={condicionesEditTemp}
-                  onChange={(e) => setCondicionesEditTemp(e.target.value)}
-                  rows={12}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <div className="flex gap-3 mt-6">
-                  <Button type="button" variant="secondary" onClick={() => setShowCondicionesModal(false)} className="flex-1">
-                    Cancelar
-                  </Button>
-                  <Button type="button" onClick={handleSaveCondiciones} loading={savingCondiciones} className="flex-1">
-                    Guardar
-                  </Button>
-                </div>
-              </div>
             </div>
-          )}
-
-          {/* Botones */}
-          <div className="flex gap-4 justify-end">
-            <Button type="button" variant="secondary" onClick={() => router.back()}>
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              loading={loading}
-              disabled={!formData.condiciones_aceptadas}
-              title={!formData.condiciones_aceptadas ? 'Debe aceptar las condiciones del servicio' : ''}
-            >
-              Crear Orden
-            </Button>
           </div>
         </form>
-      </main>
-    </div>
+
+        {/* Columna derecha sticky: resumen */}
+        <div className="flex flex-col gap-[14px] xl:sticky xl:top-6">
+          <div className="bg-navy-900 rounded-card p-4">
+            <h3 className="font-bold text-[13px] text-white mb-2">Resumen de la orden</h3>
+            {resumenFila('Cliente', cliente?.nombre || '—')}
+            {resumenFila('Recibido por', recibidoPor?.nombre || '—')}
+            {resumenFila('Técnico', tecnicoAsignado?.nombre || '—')}
+            {resumenFila('Ítems', <span className="font-mono">{items.length}</span>)}
+            {resumenFila('Total', <span className="font-mono">{formatCurrency(calcularTotal())}</span>)}
+            {resumenFila('Abono', <span className="font-mono">{formatCurrency(parseCurrency(formData.abono))}</span>)}
+            <div className="flex justify-between items-baseline gap-3 pt-3">
+              <span className="text-[11px] font-semibold uppercase tracking-[.09em] text-sidenav">Saldo</span>
+              <span className="font-mono font-bold text-xl text-[#fca5a5]">
+                {formatCurrency(Math.max(0, calcularSaldo()))}
+              </span>
+            </div>
+            <button
+              type="submit"
+              form="nueva-orden-form"
+              disabled={loading || !formData.condiciones_aceptadas}
+              title={!formData.condiciones_aceptadas ? 'Debe aceptar las condiciones del servicio' : ''}
+              className={cn(
+                'w-full mt-4 h-[42px] rounded-field font-bold text-[13px] text-white transition-colors duration-150',
+                loading || !formData.condiciones_aceptadas
+                  ? 'bg-brand-disabled cursor-not-allowed'
+                  : 'bg-brand hover:bg-brand-hover'
+              )}
+            >
+              {loading ? 'Creando orden...' : 'Crear orden'}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="w-full mt-2 h-[38px] rounded-field font-semibold text-[13px] text-sidenav hover:text-sidenav-strong hover:bg-navy-800 transition-colors duration-150"
+            >
+              Cancelar
+            </button>
+          </div>
+
+          {/* Falta por completar */}
+          <div className="bg-surface border border-line rounded-card p-4">
+            <h3 className="font-bold text-[13px] text-slate-900 mb-3">Falta por completar</h3>
+            <div className="space-y-2">
+              {requisitos.map((req) => (
+                <div key={req.label} className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      'w-2 h-2 rounded-full flex-none',
+                      req.ok ? 'bg-[#22c55e]' : 'bg-[#dc2626]'
+                    )}
+                  />
+                  <span className={cn('text-[13px] font-medium', req.ok ? 'text-slate-400 line-through' : 'text-slate-700')}>
+                    {req.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal editar condiciones */}
+      {showCondicionesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-[rgba(13,27,42,.55)]" onClick={() => setShowCondicionesModal(false)} />
+          <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">
+              {condicionesModalTipo === 'orden' && 'Editar condiciones de esta orden'}
+              {condicionesModalTipo === 'cliente' && 'Editar condiciones del cliente'}
+              {condicionesModalTipo === 'global' && 'Editar condiciones globales'}
+            </h2>
+            <p className="text-sm text-slate-500 mb-4">
+              {condicionesModalTipo === 'orden' && 'Estas condiciones solo aplicarán a esta orden.'}
+              {condicionesModalTipo === 'cliente' && 'Estas condiciones se usarán por defecto en todas las órdenes de este cliente.'}
+              {condicionesModalTipo === 'global' && 'Estas condiciones se usarán por defecto en todas las órdenes nuevas.'}
+            </p>
+            <textarea
+              value={condicionesEditTemp}
+              onChange={(e) => setCondicionesEditTemp(e.target.value)}
+              rows={12}
+              className="w-full px-4 py-2 border border-line-strong rounded-field text-sm"
+            />
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowCondicionesModal(false)}
+                className="flex-1 px-4 h-[42px] bg-surface border border-line-strong hover:border-slate-300 text-slate-600 font-semibold text-[13px] rounded-field transition-colors duration-150"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCondiciones}
+                disabled={savingCondiciones}
+                className={cn(
+                  'flex-1 px-4 h-[42px] font-bold text-[13px] text-white rounded-field transition-colors duration-150',
+                  savingCondiciones ? 'bg-brand-disabled cursor-not-allowed' : 'bg-brand hover:bg-brand-hover'
+                )}
+              >
+                {savingCondiciones ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AppShell>
   );
 }
