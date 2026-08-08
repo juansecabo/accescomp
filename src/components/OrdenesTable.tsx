@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ESTADOS_ORDEN, type EstadoOrden } from '@/types';
 import { ESTADO_STYLES, PAGO_STYLES } from '@/lib/estado-styles';
 import { formatCurrency, formatDateShort, cn } from '@/lib/utils';
@@ -43,6 +44,7 @@ export function OrdenesTable({
   emptyMessage = 'No se encontraron órdenes con esos filtros.',
 }: OrdenesTableProps) {
   const GRID = hideCliente ? GRID_SIN_CLIENTE : GRID_FULL;
+  const router = useRouter();
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [estadoMenuOpenId, setEstadoMenuOpenId] = useState<string | null>(null);
   const [pagoMenuOpenId, setPagoMenuOpenId] = useState<string | null>(null);
@@ -96,7 +98,10 @@ export function OrdenesTable({
         </button>
 
         {estadoMenuOpenId === orden.id && (
-          <div className="absolute left-0 mt-2 w-44 bg-surface border border-line rounded-lg shadow-menu z-30">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute left-0 mt-2 w-44 bg-surface border border-line rounded-lg shadow-menu z-30"
+          >
             <div className="py-1">
               <p className="px-3 py-2 text-xs text-slate-500 font-medium">Cambiar estado a:</p>
               {ESTADOS_ORDEN.map((estado) => (
@@ -170,7 +175,10 @@ export function OrdenesTable({
         </button>
 
         {pagoMenuOpenId === orden.id && (
-          <div className="absolute right-0 mt-2 w-48 bg-surface border border-line rounded-lg shadow-menu z-30">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-0 mt-2 w-48 bg-surface border border-line rounded-lg shadow-menu z-30"
+          >
             <div className="py-1">
               <p className="px-3 py-2 text-xs text-slate-500 font-medium">Estado de pago:</p>
               <button
@@ -225,6 +233,7 @@ export function OrdenesTable({
       <button
         onClick={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           const next = menuOpenId === orden.id ? null : orden.id;
           closeAll();
           setMenuOpenId(next);
@@ -238,7 +247,10 @@ export function OrdenesTable({
       </button>
 
       {menuOpenId === orden.id && (
-        <div className={cn('absolute right-0 top-7 bg-surface border border-line rounded-lg shadow-menu z-30', menuVariant === 'estado' ? 'w-48' : 'w-40')}>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={cn('absolute right-0 top-7 bg-surface border border-line rounded-lg shadow-menu z-30', menuVariant === 'estado' ? 'w-48' : 'w-40')}
+        >
           <div className="py-1">
             {menuVariant === 'estado' ? (
               <>
@@ -329,7 +341,8 @@ export function OrdenesTable({
         {ordenes.map((orden) => (
           <div
             key={orden.id}
-            className={cn(GRID, 'items-center px-4 py-[11px] border-b border-line-row hover:bg-surface-muted transition-colors duration-150')}
+            onClick={() => router.push(`/ordenes/${orden.id}`)}
+            className={cn(GRID, 'items-center px-4 py-[11px] border-b border-line-row hover:bg-surface-muted transition-colors duration-150 cursor-pointer')}
           >
             <Link
               href={`/ordenes/${orden.id}`}
@@ -374,7 +387,11 @@ export function OrdenesTable({
       {/* Tarjetas móvil */}
       <div className="lg:hidden flex flex-col divide-y divide-line-row">
         {ordenes.map((orden) => (
-          <div key={orden.id} className="p-3 bg-surface">
+          <div
+            key={orden.id}
+            onClick={() => router.push(`/ordenes/${orden.id}`)}
+            className="p-3 bg-surface cursor-pointer"
+          >
             <div className="flex items-center gap-2">
               <Link
                 href={`/ordenes/${orden.id}`}
