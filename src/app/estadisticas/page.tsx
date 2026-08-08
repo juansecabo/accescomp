@@ -2,19 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Navbar } from '@/components/Navbar';
-import { Breadcrumb } from '@/components/Breadcrumb';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { formatCurrency } from '@/lib/utils';
+import { AppShell } from '@/components/AppShell';
+import { formatCurrency, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ESTADOS_ORDEN } from '@/types';
-
-const ESTADO_COLORS: Record<string, { bg: string; text: string; hover: string }> = {
-  recibido: { bg: 'bg-blue-500', text: 'text-white', hover: 'hover:bg-blue-600' },
-  en_proceso: { bg: 'bg-yellow-500', text: 'text-white', hover: 'hover:bg-yellow-600' },
-  listo: { bg: 'bg-green-500', text: 'text-white', hover: 'hover:bg-green-600' },
-  entregado: { bg: 'bg-gray-500', text: 'text-white', hover: 'hover:bg-gray-600' },
-};
+import { ESTADO_STYLES } from '@/lib/estado-styles';
 
 type PeriodoFiltro = 'este_mes' | 'mes_anterior' | 'este_ano' | 'todo';
 
@@ -102,6 +94,7 @@ export default function EstadisticasPage() {
     const porcentaje = totalOrdenesGlobal > 0 ? ((cantidad / totalOrdenesGlobal) * 100).toFixed(1) : '0';
     return { ...estado, cantidad, porcentaje };
   });
+  const maxCantidadEstado = Math.max(1, ...estadisticasEstado.map(e => e.cantidad));
 
   // Estado de pagos (estado ACTUAL de todas las órdenes)
   const ordenesCompletas = ordenes.filter(o => esPagoCompleto(o)).length;
@@ -160,186 +153,184 @@ export default function EstadisticasPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100">
-        <Navbar />
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <p className="text-center text-gray-500">Cargando estadísticas...</p>
-        </main>
-      </div>
-    );
-  }
+  const cardClass = 'bg-surface border border-line rounded-card overflow-hidden';
+  const cardHeaderClass = 'px-4 py-[11px] border-b border-line-soft';
+  const thClass = 'py-[9px] px-2 text-[10px] font-semibold uppercase tracking-[.09em] text-slate-400';
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-      <Breadcrumb items={[
-        { label: 'Inicio', href: '/' },
-        { label: 'Estadísticas' }
-      ]} />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Estadísticas</h1>
-          <p className="text-gray-600">Resumen del negocio</p>
+    <AppShell
+      breadcrumb={[{ label: 'Inicio', href: '/' }, { label: 'Estadísticas' }]}
+      title="Estadísticas"
+      subtitle="Resumen del negocio"
+      actions={
+        <div className="flex bg-control rounded-lg p-[3px] gap-[2px] overflow-x-auto">
+          {([
+            { value: 'este_mes', label: 'Este mes' },
+            { value: 'mes_anterior', label: 'Mes anterior' },
+            { value: 'este_ano', label: 'Este año' },
+            { value: 'todo', label: 'Todo' },
+          ] as const).map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriodo(p.value)}
+              className={cn(
+                'px-[11px] py-[6px] rounded-chip font-bold text-xs whitespace-nowrap transition-colors duration-150',
+                periodo === p.value ? 'bg-navy-900 text-white' : 'text-slate-600 hover:text-slate-900'
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
-
-        {/* Resumen de ventas del período */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-lg font-semibold">Resumen de Ventas</h2>
-              <div className="flex gap-2 flex-wrap">
-                {[
-                  { value: 'este_mes', label: 'Este mes' },
-                  { value: 'mes_anterior', label: 'Mes anterior' },
-                  { value: 'este_ano', label: 'Este año' },
-                  { value: 'todo', label: 'Todo' },
-                ].map((p) => (
-                  <button
-                    key={p.value}
-                    onClick={() => setPeriodo(p.value as PeriodoFiltro)}
-                    className={`px-3 py-1.5 rounded-lg font-medium text-sm transition-colors ${
-                      periodo === p.value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+      }
+    >
+      {loading ? (
+        <div className="p-8 text-center text-[13px] font-medium text-slate-400">
+          Cargando estadísticas...
+        </div>
+      ) : (
+        <div className="p-4 sm:p-6 flex flex-col gap-[14px]">
+          {/* Resumen del período */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-[14px]">
+            <div className="bg-surface border border-line rounded-card px-4 py-[14px] flex flex-col gap-[6px]">
+              <div className="text-[10px] font-semibold uppercase tracking-[.1em] text-slate-400">
+                Órdenes {getPeriodoLabel()}
+              </div>
+              <div className="font-mono font-bold text-[30px] leading-none text-slate-900 tracking-tight">
+                {ordenesPeriodoCount}
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500">Órdenes creadas {getPeriodoLabel()}</p>
-                <p className="text-3xl font-bold text-gray-900">{ordenesPeriodoCount}</p>
+            <div className="bg-surface border border-line rounded-card px-4 py-[14px] flex flex-col gap-[6px]">
+              <div className="text-[10px] font-semibold uppercase tracking-[.1em] text-slate-400">
+                Ingresos {getPeriodoLabel()}
               </div>
-              <div className="bg-blue-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500">Ingresos {getPeriodoLabel()}</p>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(ingresosPeriodo)}</p>
-              </div>
-              <div className="bg-green-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500">Cobrado {getPeriodoLabel()}</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(cobradoPeriodo)}</p>
+              <div className="font-mono font-bold text-xl sm:text-[30px] leading-none text-brand tracking-tight">
+                {formatCurrency(ingresosPeriodo)}
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="bg-surface border border-line rounded-card px-4 py-[14px] flex flex-col gap-[6px]">
+              <div className="text-[10px] font-semibold uppercase tracking-[.1em] text-slate-400">
+                Cobrado {getPeriodoLabel()}
+              </div>
+              <div className="font-mono font-bold text-xl sm:text-[30px] leading-none text-[#047857] tracking-tight">
+                {formatCurrency(cobradoPeriodo)}
+              </div>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Estados de orden - CLICKEABLES */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">Órdenes por Estado</h2>
-              <p className="text-sm text-gray-500">Estado actual de todas las órdenes</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px] items-start">
+            {/* Órdenes por estado - barras clickeables */}
+            <div className={cardClass}>
+              <div className={cardHeaderClass}>
+                <h2 className="font-bold text-[13px] text-slate-900">Órdenes por estado</h2>
+                <p className="text-xs text-slate-400 mt-[2px]">Estado actual de todas las órdenes</p>
+              </div>
+              <div className="px-4 py-[14px] flex flex-col gap-3">
                 {estadisticasEstado.map((estado) => (
                   <Link
                     key={estado.value}
                     href={`/ordenes?estado=${estado.value}`}
-                    className={`p-4 rounded-lg ${ESTADO_COLORS[estado.value].bg} ${ESTADO_COLORS[estado.value].text} ${ESTADO_COLORS[estado.value].hover} transition-colors cursor-pointer block`}
+                    className="flex items-center gap-3 group"
                   >
-                    <p className="text-sm opacity-90">{estado.label}</p>
-                    <p className="text-2xl font-bold">{estado.cantidad}</p>
-                    <p className="text-sm opacity-75">{estado.porcentaje}%</p>
+                    <span className="w-24 flex-none text-[13px] font-semibold text-slate-600 group-hover:text-slate-900 transition-colors duration-150">
+                      {estado.label}
+                    </span>
+                    <span className="flex-1 h-[22px] rounded-chip bg-control overflow-hidden">
+                      <span
+                        className={cn('block h-full rounded-chip transition-all group-hover:opacity-85', ESTADO_STYLES[estado.value].solid)}
+                        style={{ width: `${(estado.cantidad / maxCantidadEstado) * 100}%` }}
+                      />
+                    </span>
+                    <span className="flex-none font-mono text-xs text-slate-500 whitespace-nowrap">
+                      {estado.cantidad} · {estado.porcentaje}%
+                    </span>
                   </Link>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Estado de pagos - CLICKEABLES */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">Estado de Pagos</h2>
-              <p className="text-sm text-gray-500">Estado actual de todas las órdenes</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Link
-                  href="/ordenes?pago=completo"
-                  className="flex justify-between items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors cursor-pointer block"
-                >
-                  <div>
-                    <p className="text-sm text-gray-600">Pagos Completos</p>
-                    <p className="text-2xl font-bold text-green-600">{ordenesCompletas}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">
+            {/* Estado de pagos */}
+            <div className={cardClass}>
+              <div className={cardHeaderClass}>
+                <h2 className="font-bold text-[13px] text-slate-900">Estado de pagos</h2>
+                <p className="text-xs text-slate-400 mt-[2px]">Estado actual de todas las órdenes</p>
+              </div>
+              <div className="px-4 py-[14px] flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/ordenes?pago=completo"
+                    className="p-4 bg-[#ecfdf5] rounded-card hover:opacity-85 transition-opacity duration-150"
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-[.09em] text-[#047857]">Pagos completos</p>
+                    <p className="mt-1 font-mono font-bold text-[26px] text-[#047857]">{ordenesCompletas}</p>
+                    <p className="text-xs font-medium text-[#047857]/70">
                       {totalOrdenesGlobal > 0 ? ((ordenesCompletas / totalOrdenesGlobal) * 100).toFixed(1) : 0}%
                     </p>
-                  </div>
-                </Link>
-                <Link
-                  href="/ordenes?pago=incompleto"
-                  className="flex justify-between items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer block"
-                >
-                  <div>
-                    <p className="text-sm text-gray-600">Pagos Incompletos</p>
-                    <p className="text-2xl font-bold text-red-600">{ordenesIncompletas}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">
+                  </Link>
+                  <Link
+                    href="/ordenes?pago=incompleto"
+                    className="p-4 bg-[#fef2f2] rounded-card hover:opacity-85 transition-opacity duration-150"
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-[.09em] text-[#b91c1c]">Pagos incompletos</p>
+                    <p className="mt-1 font-mono font-bold text-[26px] text-[#b91c1c]">{ordenesIncompletas}</p>
+                    <p className="text-xs font-medium text-[#b91c1c]/70">
                       {totalOrdenesGlobal > 0 ? ((ordenesIncompletas / totalOrdenesGlobal) * 100).toFixed(1) : 0}%
                     </p>
-                  </div>
-                </Link>
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-gray-500">Porcentaje de cobro total</p>
+                  </Link>
+                </div>
+                <div className="pt-3 border-t border-line-soft">
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                    <div className="flex-1 bg-control rounded-full h-[10px] overflow-hidden">
                       <div
-                        className="bg-green-500 h-3 rounded-full transition-all"
+                        className="bg-[#047857] h-[10px] rounded-full transition-all"
                         style={{ width: `${porcentajeCobro}%` }}
                       />
                     </div>
-                    <span className="text-lg font-bold text-gray-900">{porcentajeCobro}%</span>
+                    <span className="font-mono font-bold text-base text-slate-900">{porcentajeCobro}%</span>
                   </div>
+                  <p className="mt-2 font-mono text-xs text-slate-500">
+                    Facturado {formatCurrency(ingresosTotalesGlobal)} · Saldo {formatCurrency(ingresosTotalesGlobal - totalCobradoGlobal)}
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
 
-        {/* Top 10 Clientes */}
-        <Card className="mb-8">
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Top 10 Clientes</h2>
-            <p className="text-sm text-gray-500">Clientes con mayor total comprado (histórico)</p>
-          </CardHeader>
-          <CardContent>
+          {/* Top 10 Clientes */}
+          <div className={cardClass}>
+            <div className={cardHeaderClass}>
+              <h2 className="font-bold text-[13px] text-slate-900">Top 10 clientes</h2>
+              <p className="text-xs text-slate-400 mt-[2px]">Clientes con mayor total comprado (histórico)</p>
+            </div>
             {topClientes.length > 0 ? (
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <table className="w-full min-w-[320px]">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px]">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">#</th>
-                      <th className="text-left py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Cliente</th>
-                      <th className="text-center py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Órdenes</th>
-                      <th className="text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Comprado</th>
-                      <th className="text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Pendiente</th>
+                    <tr className="bg-surface-muted border-b border-line-soft">
+                      <th className={cn(thClass, 'text-left pl-4')}>#</th>
+                      <th className={cn(thClass, 'text-left')}>Cliente</th>
+                      <th className={cn(thClass, 'text-center')}>Órdenes</th>
+                      <th className={cn(thClass, 'text-right')}>Comprado</th>
+                      <th className={cn(thClass, 'text-right pr-4')}>Pendiente</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topClientes.map((cliente, index) => (
-                      <tr key={cliente.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-2 px-1 sm:px-2 text-xs sm:text-sm text-gray-500">{index + 1}</td>
-                        <td className="py-2 px-1 sm:px-2">
-                          <Link href={`/clientes/${cliente.id}`} className="text-blue-600 hover:underline font-medium text-xs sm:text-sm">
+                      <tr key={cliente.id} className="border-b border-line-row hover:bg-surface-muted transition-colors duration-150">
+                        <td className="py-[11px] px-2 pl-4 font-mono text-xs text-slate-400">{index + 1}</td>
+                        <td className="py-[11px] px-2">
+                          <Link href={`/clientes/${cliente.id}`} className="text-brand hover:text-brand-hover font-semibold text-[13px]">
                             {cliente.nombre}
                           </Link>
                         </td>
-                        <td className="py-2 px-1 sm:px-2 text-center text-xs sm:text-sm">{cliente.ordenes}</td>
-                        <td className="py-2 px-1 sm:px-2 text-right font-medium text-xs sm:text-sm">{formatCurrency(cliente.totalComprado)}</td>
-                        <td className={`py-2 px-1 sm:px-2 text-right font-medium text-xs sm:text-sm ${
-                          cliente.totalComprado - cliente.totalPagado > 0 ? 'text-red-600' : 'text-green-600'
-                        }`}>
+                        <td className="py-[11px] px-2 text-center font-mono text-[13px] text-slate-600">{cliente.ordenes}</td>
+                        <td className="py-[11px] px-2 text-right font-mono font-bold text-[13px] text-slate-900">
+                          {formatCurrency(cliente.totalComprado)}
+                        </td>
+                        <td className={cn(
+                          'py-[11px] px-2 pr-4 text-right font-mono font-bold text-[13px]',
+                          cliente.totalComprado - cliente.totalPagado > 0 ? 'text-[#b91c1c]' : 'text-[#047857]'
+                        )}>
                           {formatCurrency(cliente.totalComprado - cliente.totalPagado)}
                         </td>
                       </tr>
@@ -348,53 +339,55 @@ export default function EstadisticasPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">No hay datos de clientes</p>
+              <p className="p-8 text-center text-[13px] font-medium text-slate-400">No hay datos de clientes</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Órdenes con saldo pendiente - TODAS */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Órdenes con Saldo Pendiente</h2>
-            <p className="text-sm text-gray-500">{ordenesConSaldo.length} órdenes con deuda actualmente</p>
-          </CardHeader>
-          <CardContent>
+          {/* Órdenes con saldo pendiente */}
+          <div className={cardClass}>
+            <div className={cardHeaderClass}>
+              <h2 className="font-bold text-[13px] text-slate-900">Órdenes con saldo pendiente</h2>
+              <p className="text-xs text-slate-400 mt-[2px]">{ordenesConSaldo.length} órdenes con deuda actualmente</p>
+            </div>
             {ordenesConSaldo.length > 0 ? (
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <table className="w-full min-w-[320px]">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px]">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">#</th>
-                      <th className="text-left py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Cliente</th>
-                      <th className="text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Total</th>
-                      <th className="text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Pagado</th>
-                      <th className="text-right py-2 px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600">Pendiente</th>
+                    <tr className="bg-surface-muted border-b border-line-soft">
+                      <th className={cn(thClass, 'text-left pl-4')}>Orden</th>
+                      <th className={cn(thClass, 'text-left')}>Cliente</th>
+                      <th className={cn(thClass, 'text-right')}>Total</th>
+                      <th className={cn(thClass, 'text-right')}>Pagado</th>
+                      <th className={cn(thClass, 'text-right pr-4')}>Pendiente</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ordenesConSaldo.map((orden) => (
-                      <tr key={orden.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-2 px-1 sm:px-2">
-                          <Link href={`/ordenes/${orden.id}`} className="text-blue-600 hover:underline font-medium text-xs sm:text-sm">
+                      <tr key={orden.id} className="border-b border-line-row hover:bg-surface-muted transition-colors duration-150">
+                        <td className="py-[11px] px-2 pl-4">
+                          <Link href={`/ordenes/${orden.id}`} className="text-brand hover:text-brand-hover font-mono font-bold text-[13px]">
                             #{orden.numero_orden}
                           </Link>
                         </td>
-                        <td className="py-2 px-1 sm:px-2 text-xs sm:text-sm">{orden.cliente?.nombre || 'Sin cliente'}</td>
-                        <td className="py-2 px-1 sm:px-2 text-right text-xs sm:text-sm">{formatCurrency(orden.total)}</td>
-                        <td className="py-2 px-1 sm:px-2 text-right text-xs sm:text-sm text-green-600">{formatCurrency(orden.pagado)}</td>
-                        <td className="py-2 px-1 sm:px-2 text-right font-medium text-xs sm:text-sm text-red-600">{formatCurrency(orden.pendiente)}</td>
+                        <td className="py-[11px] px-2 text-[13px] font-medium text-slate-700">
+                          {orden.cliente?.nombre || 'Sin cliente'}
+                        </td>
+                        <td className="py-[11px] px-2 text-right font-mono text-[13px] text-slate-600">{formatCurrency(orden.total)}</td>
+                        <td className="py-[11px] px-2 text-right font-mono text-[13px] text-[#047857]">{formatCurrency(orden.pagado)}</td>
+                        <td className="py-[11px] px-2 pr-4 text-right font-mono font-bold text-[13px] text-[#b91c1c]">
+                          {formatCurrency(orden.pendiente)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">No hay órdenes con saldo pendiente</p>
+              <p className="p-8 text-center text-[13px] font-medium text-slate-400">No hay órdenes con saldo pendiente</p>
             )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+          </div>
+        </div>
+      )}
+    </AppShell>
   );
 }
