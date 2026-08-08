@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { AppShell } from '@/components/AppShell';
 import Link from 'next/link';
 import type { Cliente } from '@/types';
-import { formatDate, normalizeText, cn } from '@/lib/utils';
+import { formatDateShort, normalizeText, cn } from '@/lib/utils';
 
 const SEARCH_OPTIONS = [
   { value: 'nombre', label: 'Nombre' },
@@ -339,7 +339,7 @@ export default function ClientesPage() {
                       {conteoOrdenes(cliente)}
                     </div>
                     <div className="font-mono text-[11px] text-slate-400 whitespace-nowrap">
-                      {formatDate(cliente.created_at)}
+                      {formatDateShort(cliente.created_at)}
                     </div>
                     {clienteMenu(cliente)}
                   </div>
@@ -365,7 +365,7 @@ export default function ClientesPage() {
                           .join(' · ')}
                       </div>
                       <div className="mt-[2px] text-[11px] text-slate-400">
-                        {conteoOrdenes(cliente)} {conteoOrdenes(cliente) === 1 ? 'orden' : 'órdenes'} · {formatDate(cliente.created_at)}
+                        {conteoOrdenes(cliente)} {conteoOrdenes(cliente) === 1 ? 'orden' : 'órdenes'} · {formatDateShort(cliente.created_at)}
                       </div>
                     </Link>
                     {clienteMenu(cliente)}

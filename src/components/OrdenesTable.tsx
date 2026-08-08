@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ESTADOS_ORDEN, type EstadoOrden } from '@/types';
 import { ESTADO_STYLES, PAGO_STYLES } from '@/lib/estado-styles';
-import { formatCurrency, formatDate, cn } from '@/lib/utils';
+import { formatCurrency, formatDateShort, cn } from '@/lib/utils';
 
 export const calcularTotalOrden = (orden: any) =>
   orden.items?.reduce((sum: number, item: any) => sum + item.precio * item.cantidad, 0) || 0;
@@ -364,7 +364,7 @@ export function OrdenesTable({
             </div>
             <div className="text-right">{pagoBadge(orden)}</div>
             <div className="text-right font-mono text-[11px] text-slate-400 whitespace-nowrap">
-              {formatDate(orden.created_at)}
+              {formatDateShort(orden.created_at)}
             </div>
             {rowMenu(orden)}
           </div>
@@ -396,7 +396,7 @@ export function OrdenesTable({
               )}
               <div className="mt-[2px] text-xs text-slate-500 truncate">{orden.equipo_descripcion}</div>
               <div className="mt-[2px] font-mono text-[11px] text-slate-400">
-                {[orden.cliente?.telefono, formatDate(orden.created_at)].filter(Boolean).join(' · ')}
+                {[orden.cliente?.telefono, formatDateShort(orden.created_at)].filter(Boolean).join(' · ')}
               </div>
             </Link>
           </div>

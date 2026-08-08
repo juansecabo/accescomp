@@ -91,6 +91,15 @@ export function formatDate(date: string | Date): string {
   }).format(new Date(date));
 }
 
+// Fecha corta para columnas de tabla densas (ej: "19 mar 26")
+export function formatDateShort(date: string | Date): string {
+  return new Intl.DateTimeFormat('es-MX', {
+    year: '2-digit',
+    month: 'short',
+    day: '2-digit',
+  }).format(new Date(date));
+}
+
 export function formatDateTime(date: string | Date): string {
   return new Intl.DateTimeFormat('es-MX', {
     year: 'numeric',
