@@ -273,7 +273,9 @@ export default function NuevaOrdenPage() {
     }
   };
 
-  const cardClass = 'bg-surface border border-line rounded-card overflow-hidden';
+  // Sin overflow-hidden: los buscadores (cliente/trabajador) despliegan sus
+  // sugerencias por fuera del borde de la tarjeta y no deben recortarse.
+  const cardClass = 'bg-surface border border-line rounded-card';
 
   const seccionHeader = (numero: string, titulo: string, extra?: React.ReactNode) => (
     <div className="px-4 py-[11px] border-b border-line-soft flex items-center justify-between gap-2">
