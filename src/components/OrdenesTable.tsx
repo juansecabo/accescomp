@@ -18,14 +18,17 @@ export const esPagoCompleto = (orden: any) => {
   return total > 0 && pagado >= total;
 };
 
-const GRID = 'grid grid-cols-[88px_120px_minmax(0,1.2fr)_minmax(0,1.5fr)_120px_160px_120px_34px]';
+const GRID_FULL = 'grid grid-cols-[88px_120px_minmax(0,1.2fr)_minmax(0,1.5fr)_120px_160px_120px_34px]';
+const GRID_SIN_CLIENTE = 'grid grid-cols-[88px_120px_minmax(0,1.8fr)_120px_160px_120px_34px]';
 
 interface OrdenesTableProps {
   ordenes: any[];
   onChangeEstado: (ordenId: string, nuevoEstado: EstadoOrden) => void;
-  onSetPagoCompleto: (orden: any) => void;
-  onSetPagoIncompleto: (orden: any) => void;
-  onDelete: (orden: any) => void;
+  onSetPagoCompleto?: (orden: any) => void;
+  onSetPagoIncompleto?: (orden: any) => void;
+  onDelete?: (orden: any) => void;
+  hideCliente?: boolean;
+  menuVariant?: 'acciones' | 'estado';
   emptyMessage?: string;
 }
 
@@ -35,8 +38,11 @@ export function OrdenesTable({
   onSetPagoCompleto,
   onSetPagoIncompleto,
   onDelete,
+  hideCliente = false,
+  menuVariant = 'acciones',
   emptyMessage = 'No se encontraron órdenes con esos filtros.',
 }: OrdenesTableProps) {
+  const GRID = hideCliente ? GRID_SIN_CLIENTE : GRID_FULL;
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [estadoMenuOpenId, setEstadoMenuOpenId] = useState<string | null>(null);
   const [pagoMenuOpenId, setPagoMenuOpenId] = useState<string | null>(null);
@@ -129,6 +135,20 @@ export function OrdenesTable({
     const style = completo ? PAGO_STYLES.completo : PAGO_STYLES.incompleto;
     const pct = total > 0 ? Math.min(100, Math.round((pagado / total) * 100)) : 0;
 
+    // Sin handlers de pago, el badge es informativo (no clickeable)
+    if (!onSetPagoCompleto || !onSetPagoIncompleto) {
+      return (
+        <div className={cn(alignRight && 'ml-auto text-right')}>
+          <span className={cn('font-mono font-bold text-[13px] whitespace-nowrap', style.fg)}>
+            {completo ? formatCurrency(total) : `${formatCurrency(pagado)} / ${formatCurrency(total)}`}
+          </span>
+          <span className={cn('mt-[5px] block w-[88px] h-1 rounded-full bg-line-soft overflow-hidden', alignRight && 'ml-auto')}>
+            <span className={cn('block h-1 rounded-full', style.bar)} style={{ width: `${pct}%` }} />
+          </span>
+        </div>
+      );
+    }
+
     return (
       <div className="relative" ref={pagoMenuOpenId === orden.id ? pagoMenuRef : null}>
         <button
@@ -218,31 +238,63 @@ export function OrdenesTable({
       </button>
 
       {menuOpenId === orden.id && (
-        <div className="absolute right-0 top-7 w-40 bg-surface border border-line rounded-lg shadow-menu z-30">
+        <div className={cn('absolute right-0 top-7 bg-surface border border-line rounded-lg shadow-menu z-30', menuVariant === 'estado' ? 'w-48' : 'w-40')}>
           <div className="py-1">
-            <Link
-              href={`/ordenes/${orden.id}`}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-surface-muted text-slate-700 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Ver detalle
-            </Link>
-            <hr className="my-1 border-line-soft" />
-            <button
-              onClick={() => {
-                onDelete(orden);
-                setMenuOpenId(null);
-              }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-[#fef2f2] text-[#b91c1c] flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Eliminar
-            </button>
+            {menuVariant === 'estado' ? (
+              <>
+                <p className="px-3 py-2 text-xs text-slate-500 font-medium">Cambiar estado a:</p>
+                {ESTADOS_ORDEN.map((estado) => (
+                  <button
+                    key={estado.value}
+                    onClick={() => {
+                      onChangeEstado(orden.id, estado.value);
+                      setMenuOpenId(null);
+                    }}
+                    disabled={orden.estado === estado.value}
+                    className={cn(
+                      'w-full px-3 py-2 text-left text-sm hover:bg-surface-muted flex items-center gap-2',
+                      orden.estado === estado.value && 'opacity-50 cursor-not-allowed bg-surface-muted'
+                    )}
+                  >
+                    <span className={cn('w-3 h-3 rounded-full', ESTADO_STYLES[estado.value].dot)} />
+                    {estado.label}
+                    {orden.estado === estado.value && (
+                      <span className="ml-auto text-xs text-slate-400">(actual)</span>
+                    )}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                <Link
+                  href={`/ordenes/${orden.id}`}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-surface-muted text-slate-700 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Ver detalle
+                </Link>
+                {onDelete && (
+                  <>
+                    <hr className="my-1 border-line-soft" />
+                    <button
+                      onClick={() => {
+                        onDelete(orden);
+                        setMenuOpenId(null);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-[#fef2f2] text-[#b91c1c] flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Eliminar
+                    </button>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
@@ -267,7 +319,7 @@ export function OrdenesTable({
         >
           <div>Orden</div>
           <div>Estado</div>
-          <div>Cliente</div>
+          {!hideCliente && <div>Cliente</div>}
           <div>Equipo</div>
           <div>Técnico</div>
           <div className="text-right">Pago</div>
@@ -286,22 +338,24 @@ export function OrdenesTable({
               #{orden.numero_orden}
             </Link>
             <div>{estadoBadge(orden)}</div>
-            <div className="min-w-0 pr-2">
-              <div className="font-semibold text-[13px] text-slate-900 truncate">
-                {orden.cliente?.nombre || 'Sin cliente'}
-              </div>
-              {(orden.cliente?.numero_documento || orden.cliente?.telefono) && (
-                <div className="font-mono font-medium text-[11px] text-slate-400 truncate">
-                  {[
-                    orden.cliente?.numero_documento &&
-                      `${orden.cliente.tipo_documento || ''} ${orden.cliente.numero_documento}`.trim(),
-                    orden.cliente?.telefono,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
+            {!hideCliente && (
+              <div className="min-w-0 pr-2">
+                <div className="font-semibold text-[13px] text-slate-900 truncate">
+                  {orden.cliente?.nombre || 'Sin cliente'}
                 </div>
-              )}
-            </div>
+                {(orden.cliente?.numero_documento || orden.cliente?.telefono) && (
+                  <div className="font-mono font-medium text-[11px] text-slate-400 truncate">
+                    {[
+                      orden.cliente?.numero_documento &&
+                        `${orden.cliente.tipo_documento || ''} ${orden.cliente.numero_documento}`.trim(),
+                      orden.cliente?.telefono,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="min-w-0 pr-2 text-xs text-slate-500 leading-[1.4] truncate">
               {orden.equipo_descripcion}
             </div>
@@ -335,9 +389,11 @@ export function OrdenesTable({
               </div>
             </div>
             <Link href={`/ordenes/${orden.id}`} className="block mt-2">
-              <div className="font-semibold text-sm text-slate-900">
-                {orden.cliente?.nombre || 'Sin cliente'}
-              </div>
+              {!hideCliente && (
+                <div className="font-semibold text-sm text-slate-900">
+                  {orden.cliente?.nombre || 'Sin cliente'}
+                </div>
+              )}
               <div className="mt-[2px] text-xs text-slate-500 truncate">{orden.equipo_descripcion}</div>
               <div className="mt-[2px] font-mono text-[11px] text-slate-400">
                 {[orden.cliente?.telefono, formatDate(orden.created_at)].filter(Boolean).join(' · ')}
