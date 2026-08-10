@@ -76,14 +76,29 @@ async function crearVentana() {
   ventana.show();
 }
 
-app.whenReady().then(() => {
-  iniciarServidor();
-  crearVentana();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) crearVentana();
+// Instancia única: si la app ya está abierta, enfocar esa ventana
+// en vez de fallar por el puerto ocupado
+const esInstanciaUnica = app.requestSingleInstanceLock();
+if (!esInstanciaUnica) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    const ventana = BrowserWindow.getAllWindows()[0];
+    if (ventana) {
+      if (ventana.isMinimized()) ventana.restore();
+      ventana.focus();
+    }
   });
-});
+
+  app.whenReady().then(() => {
+    iniciarServidor();
+    crearVentana();
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) crearVentana();
+    });
+  });
+}
 
 app.on('window-all-closed', () => {
   app.quit();
