@@ -24,7 +24,7 @@ const SEARCH_OPTIONS = [
 
 export default function OrdenesPage() {
   const searchParams = useSearchParams();
-  const estadoParam = searchParams.get('estado') as EstadoOrden | null;
+  const estadoParam = searchParams.get('estado');
   const pagoParam = searchParams.get('pago') as 'completo' | 'incompleto' | null;
 
   const [ordenes, setOrdenes] = useState<any[]>([]);
@@ -32,8 +32,14 @@ export default function OrdenesPage() {
   const [searchType, setSearchType] = useState('numero_orden');
   const [searchValue, setSearchValue] = useState('');
   const [selectedEstados, setSelectedEstados] = useState<Set<EstadoOrden | 'todas'>>(() => {
-    if (estadoParam && ['recibido', 'en_proceso', 'listo', 'entregado'].includes(estadoParam)) {
-      return new Set<EstadoOrden | 'todas'>([estadoParam]);
+    // Acepta uno o varios estados separados por coma: ?estado=recibido,en_proceso
+    const validos = (estadoParam || '')
+      .split(',')
+      .filter((e): e is EstadoOrden =>
+        ['recibido', 'en_proceso', 'listo', 'entregado'].includes(e)
+      );
+    if (validos.length > 0) {
+      return new Set<EstadoOrden | 'todas'>(validos);
     }
     return new Set<EstadoOrden | 'todas'>(['todas']);
   });

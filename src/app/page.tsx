@@ -129,24 +129,28 @@ export default function Dashboard() {
       value: String(recibidas + enProceso),
       context: `${recibidas} recibidas · ${enProceso} en proceso`,
       contextClass: 'text-slate-500',
+      href: '/ordenes?estado=recibido,en_proceso',
     },
     {
       label: 'Listas para entregar',
       value: String(listas),
-      context: 'Avisar al cliente',
+      context: 'Avisar al cliente →',
       contextClass: 'text-[#047857]',
+      href: '/ordenes?estado=listo',
     },
     {
       label: 'Cobrado (histórico)',
       value: formatCurrency(cobrado),
       context: `${pctCobrado}% de lo facturado`,
       contextClass: 'text-slate-500',
+      href: '/estadisticas',
     },
     {
       label: 'Saldo pendiente',
       value: formatCurrency(saldoPendiente),
-      context: `${conDeuda} ${conDeuda === 1 ? 'orden' : 'órdenes'} con deuda`,
+      context: `${conDeuda} ${conDeuda === 1 ? 'orden' : 'órdenes'} con deuda →`,
       contextClass: 'text-[#b91c1c]',
+      href: '/ordenes?pago=incompleto',
     },
   ];
 
@@ -180,9 +184,10 @@ export default function Dashboard() {
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-[14px]">
           {kpis.map((kpi) => (
-            <div
+            <Link
               key={kpi.label}
-              className="bg-surface border border-line rounded-card px-4 py-[14px] flex flex-col gap-[6px]"
+              href={kpi.href}
+              className="bg-surface border border-line rounded-card px-4 py-[14px] flex flex-col gap-[6px] hover:border-line-strong hover:shadow-menu transition-all duration-150"
             >
               <div className="text-[10px] font-semibold uppercase tracking-[.1em] text-slate-400">
                 {kpi.label}
@@ -193,7 +198,7 @@ export default function Dashboard() {
               <div className={cn('text-xs font-medium leading-[1.3]', kpi.contextClass)}>
                 {loading ? '' : kpi.context}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
