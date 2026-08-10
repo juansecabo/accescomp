@@ -1,6 +1,6 @@
 {
   "name": "accescomp-gestion",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Accescomp Gestión - órdenes de servicio técnico",
   "author": "Accescomp",
@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dist:win": "node scripts/build-installer.mjs"
+    "dist:win": "node scripts/build-installer.mjs",
+    "parche:win": "node scripts/build-patch.mjs"
   },
   "build": {
     "appId": "com.accescomp.gestion",
@@ -21,7 +22,8 @@
     },
     "files": [
       "electron/**",
-      "public/pwa-512x512.png"
+      "public/pwa-512x512.png",
+      "!node_modules/**"
     ],
     "afterPack": "scripts/after-pack.cjs",
     "win": {
@@ -29,8 +31,8 @@
       "icon": "public/pwa-512x512.png"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "runAfterFinish": true,
       "createDesktopShortcut": true,
       "shortcutName": "Accescomp Gestión"
     }
