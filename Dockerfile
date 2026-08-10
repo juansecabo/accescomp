@@ -1,6 +1,7 @@
 # Etapa 1: Dependencias (todas, incluyendo dev para el build)
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+# python3/make/g++: better-sqlite3 (modo local de la app instalable) se compila al instalar
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
